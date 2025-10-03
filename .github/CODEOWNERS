@@ -1,0 +1,5 @@
+# default group
+* @pcdshub/laser-sme @pcdshub/embedded-sme
+
+# github folder holds administrative files
+.github/** @pcdshub/software-admin
