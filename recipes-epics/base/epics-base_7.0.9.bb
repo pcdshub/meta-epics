@@ -80,41 +80,21 @@ do_compile() {
     echo "Skipping; all work done in do_install"
 }
 
-python do_install() {
-    import os, subprocess, shutil
+do_install() {
+    install_dir="${D}/opt/epics/${PN}"
 
-    D = d.getVar('D')
-    PN = d.getVar('PN')
+    # Bring in the BUILD_XXX flags. These must be supplied on the command line *only* because they
+    # may contain package specific settings (i.e. --sysroot=). Putting them in a CONFIG_SITE.Common file
+    # will result in them being passed down to other EPICS packages.
+    make -j${BB_NUMBER_THREADS} \
+        USR_CFLAGS="${BUILD_CFLAGS} ${CFLAGS}" \
+        USR_CXXFLAGS="${BUILD_CXXFLAGS} ${CXXFLAGS}" \
+        USR_LDFLAGS="${BUILD_LDFLAGS} ${LDFLAGS}"
 
-    install_dir = f'{D}/opt/epics/{PN}'
-
-    r = subprocess.run([
-        'make',
-        f'install.{epics.target_arch(d)}',
-        f'-j{os.cpu_count()}',
-        # Bring in the BUILD_XXX flags. These must be supplied on the command line *only* because they
-        # may contain package specific settings (i.e. --sysroot=). Putting them in a CONFIG_SITE.Common file
-        # will result in them being passed down to other EPICS packages.
-        f'USR_CFLAGS={d.getVar("BUILD_CFLAGS")} {d.getVar("CFLAGS")}',
-        f'USR_CXXFLAGS={d.getVar("BUILD_CXXFLAGS")} {d.getVar("CXXFLAGS")}',
-        f'USR_LDFLAGS={d.getVar("BUILD_LDFLAGS")} {d.getVar("LDFLAGS")}'
-    ])
-
-    if r.returncode != 0:
-        raise Exception('Build failed')
-
-    r = subprocess.run([
-        'make', 'clean'
-    ])
-
-    if r.returncode != 0:
-        raise Exception('Clean failed')
+    make clean
 
     # Need to remove these so we pass the stupid tmpdir sanity check...
-    try:
-        shutil.rmtree(f'{install_dir}/lib/pkgconfig')
-    except:
-        pass
+    rm -rf "${install_dir}/lib/pkgconfig"
 }
 
 # Disable stripping and debug split; doesn't work for combined packages like this
