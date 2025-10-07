@@ -17,29 +17,15 @@ def host_arch(d) -> str:
     """
     Determines host arch based on uname()
     """
-    r = os.uname()
-    if r.sysname == 'Linux':
-        return f'linux-{r.machine}'
-    raise EnvironmentError("Unsupported host arch")
-
-def gcc_target_arch(d) -> str:
-    """
-    Returns gcc target arch, as returned by -dumpmachine
-    """
-    cc = d.getVar("CC")
-    if not cc:
-        raise EnvironmentError("Missing CC")
-    cc = _sanitize_compiler_cmd(cc)
-    r = subprocess.run([cc, '-dumpmachine'], universal_newlines=True, capture_output=True)
-    return r.stdout.strip()
+    host_os = d.getVar('BUILD_OS')
+    return f'{host_os.split("-")[0]}-{d.getVar("BUILD_ARCH")}'
 
 def target_arch(d) -> str:
     """
     Returns EPICS-ified target arch (i.e. linux-aarch64)
     """
-    gt = gcc_target_arch(d)
-    l = gt.split('-')
-    return f'linux-{l[0]}'
+    tgt_arch = d.getVar('TARGET_ARCH')
+    return f'linux-{tgt_arch}'
 
 def get_extra_compiler_flags(d) -> list[str]:
     """

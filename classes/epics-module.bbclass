@@ -6,11 +6,12 @@
 MODNAME = "${PN}"
 
 # Disable other checks that are incompatible with the EPICS build style
+# - staticdev is incompatible with packages that include static libs in the base package.
+# - file-rdeps is incompatible with combined sdk/target packages, where we have a mix of host tools and target bins.
 INSANE_SKIP:${PN} = "file-rdeps staticdev"
 
 python do_configure() {
     print(f'host arch={epics.host_arch(d)}')
-    print(f'gcc target={epics.gcc_target_arch(d)}')
     print(f'epics target={epics.target_arch(d)}')
 
     print(f'RECIPE_SYSROOT={d.getVar("RECIPE_SYSROOT")}')

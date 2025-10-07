@@ -16,13 +16,16 @@ RDEPENDS:${PN} += " bash perl"
 
 S = "${WORKDIR}/git"
 
-python do_compile() {
+python do_configure() {
     import os, subprocess, io
 
     dest = d.getVar("D")
     PN = d.getVar("PN")
 
     target_arch = epics.target_arch(d)
+    
+    print(f'TARGET_ARCH={target_arch}')
+    print(f'HOST_ARCH={epics.host_arch(d)}')
 
     install_dir = f"{dest}/opt/epics/{PN}"
     try:
@@ -71,6 +74,10 @@ python do_compile() {
     # Installing files here will result in them being clobbered before do_install.
     # make build.${TGTARCH} would work (in theory), but the build process relies on msi
     # and other EPICS tools that are generated+installed as part of the install.xxx targets.
+}
+
+do_compile() {
+    echo "Skipping; all work done in do_install"
 }
 
 python do_install() {
