@@ -27,18 +27,8 @@ do_compile() {
     echo "Compile deferred until install process..."
 }
 
-python do_install() {
-    import subprocess
-    import os
-    
-    r = subprocess.run([
-        'make',
-        f'install.{epics.target_arch(d)}',
-        f'-j{os.process_cpu_count()}'
-    ])
-    
-    if r.returncode != 0:
-        raise Exception('Build failed')
+do_install() {
+    make -j${BB_NUMBER_THREADS} install
 }
 
 FILES:${PN} += "/opt/epics/${MODNAME}/*"
