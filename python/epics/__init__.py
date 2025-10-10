@@ -86,7 +86,8 @@ def generate_release_local(d, extra: dict = {}):
         deps = get_depends(d)
         for mn, mv in deps.items():
             # convert to a usable variable in RELEASE
-            mn = mn.replace('epics-', '').upper()
+            # FIXME: May cause issues with modules like seq, which is sometimes referred to as SNCSEQ in the RELEASE
+            mn = mn.replace('slac-epics-', '').replace('epics-', '').upper()
             fp.write(f'{mn}={mv}\n')
         fp.write('SUPPORT=\n')
         # write out extras
