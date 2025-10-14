@@ -13,7 +13,8 @@ LIC_FILES_CHKSUM = ""
 SRCREV = "569a6b6fb1288c067ac2b22a998aa7de5375ddc4"
 SRC_URI = "git://github.com/epics-modules/busy;protocol=https;branch=master;rev=${SRCREV}"
 
-DEPENDS += "epics-base epics-asyn"
+EPICS_DEPENDS += "epics-asyn"
+DEPENDS += "${EPICS_DEPENDS}"
 
 S = "${WORKDIR}/git"
 

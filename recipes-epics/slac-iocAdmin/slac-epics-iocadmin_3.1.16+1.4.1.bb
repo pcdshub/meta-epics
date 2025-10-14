@@ -11,6 +11,4 @@ NO_GENERIC_LICENSE[EPICS] = "LICENSE"
 SRCREV = "a53df77b905dd991e58251cf82f4390a6a84a42e"
 SRC_URI = "git://github.com/slac-epics/iocAdmin;protocol=https;branch=R3.1.16-1.branch;rev=${SRCREV}"
 
-DEPENDS += "epics-base"
-
 S = "${WORKDIR}/git"

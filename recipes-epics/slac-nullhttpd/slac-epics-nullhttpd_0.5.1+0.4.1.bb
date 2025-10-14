@@ -10,6 +10,4 @@ LICENSE_PATH += "${S}"
 SRCREV = "d4ce521efc9e53594a262497e8a5ebf0785d73ad"
 SRC_URI = "git://github.com/slac-epics/nullhttpd;branch=slac-master;protocol=https;rev=${SRCREV}"
 
-DEPENDS += "epics-base"
-
 S = "${WORKDIR}/git"

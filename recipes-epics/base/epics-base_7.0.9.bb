@@ -58,6 +58,12 @@ python do_configure() {
     AR = d.getVar("AR")
     RANLIB = d.getVar("RANLIB")
 
+    # Append some barebones stuff to the host configuration
+    with open(f'configure/os/CONFIG_SITE.Common.{host_arch}', 'a') as fp:
+        fp.seek(0, io.SEEK_END)
+        # Force C99; GCC 15 switches the default C standard to C23, which breaks a *lot* of things.
+        fp.write('OP_SYS_CFLAGS += -std=c99\n')
+
     if not os.path.exists(f'configure/os/CONFIG_SITE.{host_arch}.{target_arch}'):
         raise Exception(f'Target architecture {target_arch} is unsupported by EPICS base. Cannot continue')
 

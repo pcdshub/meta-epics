@@ -13,6 +13,4 @@ LIC_FILES_CHKSUM = ""
 SRCREV = "6cbf5170d5be489c24b21b7f9d2f9d3e44444728"
 SRC_URI = "git://github.com/slac-epics/history;protocol=https;branch=master;rev=${SRCREV}"
 
-DEPENDS += "epics-base"
-
 S = "${WORKDIR}/git"

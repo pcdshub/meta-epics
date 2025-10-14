@@ -11,6 +11,4 @@ NO_GENERIC_LICENSE[EPICS] = "LICENSE"
 SRCREV = "8990b59f180552fbf33697be04190381f3075643"
 SRC_URI = "git://github.com/epics-modules/MCoreUtils;protocol=https;branch=main;rev=${SRCREV}"
 
-DEPENDS += "epics-base"
-
 S = "${WORKDIR}/git"

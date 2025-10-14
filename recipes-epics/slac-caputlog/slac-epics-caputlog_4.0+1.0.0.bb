@@ -13,6 +13,4 @@ LIC_FILES_CHKSUM = ""
 SRCREV = "ade180888a359fe18edeab72ef9817d0326faf6d"
 SRC_URI = "git://github.com/slac-epics/caPutLog;branch=R4.0-1.branch;protocol=https;rev=${SRCREV}"
 
-DEPENDS += "epics-base"
-
 S = "${WORKDIR}/git"

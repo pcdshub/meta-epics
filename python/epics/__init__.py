@@ -37,32 +37,18 @@ def get_extra_compiler_flags(d) -> list[str]:
         f'--sysroot={d.getVar('RECIPE_SYSROOT')}'
     ]
 
-def is_epics_package(d, name: str) -> str|None:
-    """
-    Determine if a package in DEPENDS is an EPICS package (base, module, etc)
-    Returns the full path to it, or None if it isn't an EPICS package
-    """
-    pfx = d.getVar('RECIPE_SYSROOT')
-    path = f'{pfx}/opt/epics/{name}'
-    # Should pass for everything EPICS related
-    if os.path.exists(f'{path}/configure/RELEASE'):
-        return path
-    return None
-
 def get_depends(d) -> dict:
     """
     Returns a dict of EPICS modules that this one depends on
     This is a mapping of recipe name -> path to the package.
     """
-    pfx = d.getVar('RECIPE_SYSROOT')
-    deps = d.getVar('DEPENDS').split(' ')
     r = {}
-    for dep in deps:
-        if dep == 'epics-base':
-            continue # This is implied
-        l = is_epics_package(d, dep)
-        if l:
-            r[dep] = l
+    pfx = d.getVar('RECIPE_SYSROOT')
+    deps = d.getVar('EPICS_DEPENDS')
+    if not deps or len(deps) == 0:
+        return r
+    for dep in deps.split(' '):
+        r[dep] = f'{pfx}/opt/epics/{dep}'
     return r
 
 def generate_release_local(d, extra: dict = {}):

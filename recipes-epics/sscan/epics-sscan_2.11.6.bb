@@ -11,8 +11,6 @@ NO_GENERIC_LICENSE[synApps] = "LICENSE"
 SRCREV = "f03da19eb11a5aa648d63cf1f26d95acd6172e28"
 SRC_URI = "git://github.com/epics-modules/sscan;protocol=https;branch=master;rev=${SRCREV}"
 
-DEPENDS += "epics-base"
-
 S = "${WORKDIR}/git"
 
 disable_sncseq () {

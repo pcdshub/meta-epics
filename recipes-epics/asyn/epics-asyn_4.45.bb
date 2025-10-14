@@ -11,7 +11,7 @@ NO_GENERIC_LICENSE[synApps] = "LICENSE"
 SRCREV = "d55786e0508b1f8244cfae943ebc5fffccfb7590"
 SRC_URI = "git://github.com/epics-modules/asyn;protocol=https;branch=master;rev=${SRCREV}"
 
-DEPENDS += "epics-base libtirpc"
+DEPENDS += "libtirpc"
 
 S = "${WORKDIR}/git"
 

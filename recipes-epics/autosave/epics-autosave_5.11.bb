@@ -11,6 +11,4 @@ NO_GENERIC_LICENSE[synApps] = "LICENSE"
 SRCREV = "606903e177790c6431b277d4393700d9e5991b26"
 SRC_URI = "git://github.com/epics-modules/autosave;protocol=https;branch=master;rev=${SRCREV}"
 
-DEPENDS += "epics-base"
-
 S = "${WORKDIR}/git"
