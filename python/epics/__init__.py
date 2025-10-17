@@ -45,9 +45,8 @@ def get_depends(d) -> dict:
     r = {}
     pfx = d.getVar('RECIPE_SYSROOT')
     deps = d.getVar('EPICS_DEPENDS')
-    if not deps or len(deps) == 0:
-        return r
     for dep in deps.split(' '):
+        if len(dep) == 0: continue
         r[dep] = f'{pfx}/opt/epics/{dep}'
     return r
 
