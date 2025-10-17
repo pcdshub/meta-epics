@@ -23,7 +23,7 @@ INHIBIT_PACKAGE_STRIP = "1"
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 
 # Sucks, but we have to compile the package for x86_64 hosts too in case some tools run during the build process
-COMPATIBLE_HOST = "(x86_64|aarch64).*-linux"
+COMPATIBLE_HOST = "(x86_64|aarch64|arm).*linux.*"
 
 python do_configure() {
     print(f'host arch={epics.host_arch(d)}')
