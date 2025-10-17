@@ -1,7 +1,7 @@
 inherit epics-module
 
-SUMMARY = "Calc recipe"
-DESCRIPTION = "Recipe for building Calc for the EPICS control system."
+SUMMARY = "SScan recipe"
+DESCRIPTION = "Recipe for building SScan for the EPICS control system."
 
 LICENSE = "synApps"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=a2c259c010f2152379d7769be894bf4a"
