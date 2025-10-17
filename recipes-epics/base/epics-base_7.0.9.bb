@@ -1,16 +1,13 @@
 SUMMARY = "EPICS base recipe"
 DESCRIPTION = "Recipe for building EPICS base for the EPICS control system."
 
-# The EPICS base license is special, tell Yocto to stop trying to match against known licenses
-NO_GENERIC_LICENSE = "1"
-
 LICENSE = "EPICS"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=2eeea17a15fc6ba8501fdcec09b854dc"
 LICENSE_PATH += "${S}"
 NO_GENERIC_LICENSE[EPICS] = "LICENSE"
 
 BBCLASSEXTEND =+ "native nativesdk"
-COMPATIBLE_HOST = "(x86_64|aarch64).*-linux"
+COMPATIBLE_HOST = "(x86_64|aarch64|arm).*-linux.*"
 
 SRCREV = "07572ab02593fa225660fdee670850c9989f5851"
 SRC_URI = "gitsm://github.com/epics-base/epics-base;protocol=https;branch=7.0;rev=${SRCREV}"
