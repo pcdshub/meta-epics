@@ -6,10 +6,9 @@ DESCRIPTION = "Recipe for building EPICS base, the core component of the EPICS c
 LICENSE = "EPICS"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=2eeea17a15fc6ba8501fdcec09b854dc"
 LICENSE_PATH += "${S}"
-NO_GENERIC_LICENSE[EPICS] = "LICENSE"
+#NO_GENERIC_LICENSE[EPICS] = "LICENSE"
 
 BBCLASSEXTEND =+ "native nativesdk"
-COMPATIBLE_HOST = "(x86_64|aarch64|arm).*-linux.*"
 
 SRCREV = "07572ab02593fa225660fdee670850c9989f5851"
 SRC_URI = "gitsm://github.com/epics-base/epics-base;protocol=https;branch=7.0;rev=${SRCREV}"
