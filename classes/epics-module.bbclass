@@ -1,86 +1,8 @@
 #
-# Defines common methods for EPICS module recipes
+# class for all EPICS modules that automatically brings in epics-base and epics-base-native
 #
 
-# Default module name is the package name
-MODNAME = "${PN}"
+inherit epics-component
 
 # All EPICS modules depend on epics-base and epics-base-native
 DEPENDS += "epics-base epics-base-native"
-
-# Add your EPICS dependencies to this variable
-EPICS_DEPENDS = ""
-
-# Disable other checks that are incompatible with the EPICS build style
-# - staticdev is incompatible with packages that include static libs in the base package.
-# - file-rdeps is incompatible with combined sdk/target packages, where we have a mix of host tools and target bins.
-# - arch is incompatible with -native packages, since they contain binaries for the build host OS
-INSANE_SKIP:${PN} = "file-rdeps staticdev"
-INSANE_SKIP:${PN}-native = "file-rdeps staticdev arch"
-
-# Disable stripping and debug split; doesn't work for combined packages like this
-INHIBIT_SYSROOT_STRIP = "1"
-INHIBIT_PACKAGE_STRIP = "1"
-INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
-
-# Sucks, but we have to compile the package for x86_64 hosts too in case some tools run during the build process
-COMPATIBLE_HOST = "(x86_64|aarch64).*-linux"
-
-python do_configure() {
-    print(f'host arch={epics.host_arch(d)}')
-    print(f'epics target={epics.target_arch(d)}')
-
-    print(f'RECIPE_SYSROOT={d.getVar("RECIPE_SYSROOT")}')
-
-    # Generate a RELEASE.local handling all dependencies
-    epics.generate_release_local(d)
-
-    # Retarget build products too
-    epics.generate_config_site(d)
-}
-
-do_compile() {
-    make -j${BB_NUMBER_THREADS} build
-}
-
-do_install() {
-    make -j${BB_NUMBER_THREADS} install
-
-    # Copy iocBoot and cpuBoot directories
-    for d in iocBoot cpuBoot; do
-        if [ -d $d ]; then
-            cp -rfv $d "${D}/opt/epics/${MODNAME}/$d"
-        fi
-    done
-}
-
-# Common directories to install for both native and target pkgs
-ALL_FILES += "/opt/epics/${PN}/db"
-ALL_FILES += "/opt/epics/${PN}/dbd"
-ALL_FILES += "/opt/epics/${PN}/include"
-ALL_FILES += "/opt/epics/${PN}/configure"
-ALL_FILES += "/opt/epics/${PN}/cfg"
-ALL_FILES += "/opt/epics/${PN}/templates"
-ALL_FILES += "/opt/epics/${PN}/doc"
-ALL_FILES += "/opt/epics/${PN}/html"
-ALL_FILES += "/opt/epics/${PN}/iocBoot"
-ALL_FILES += "/opt/epics/${PN}/cpuBoot"
-ALL_FILES += "/opt/epics/${PN}/autosave"
-ALL_FILES += "/opt/epics/${PN}/display"
-ALL_FILES += "/opt/epics/${PN}/screens"
-ALL_FILES += "/opt/epics/${PN}/archive"
-
-# Build a package for the build host
-PACKAGES += "${PN}-native"
-FILES:${PN}-native += "${ALL_FILES}"
-FILES:${PN}-native += "/opt/epics/${PN}/bin/linux-${BUILD_ARCH}"
-FILES:${PN}-native += "/opt/epics/${PN}/lib/linux-${BUILD_ARCH}"
-FILES:${PN}-native += "/opt/epics/${PN}/lib/perl"
-
-# Build a package for the target system
-FILES:${PN} += "${ALL_FILES}"
-FILES:${PN} += "/opt/epics/${PN}/bin/linux-${TARGET_ARCH}"
-FILES:${PN} += "/opt/epics/${PN}/lib/linux-${TARGET_ARCH}"
-
-# Expose this package in the sysroot
-SYSROOT_DIRS += "/opt/epics/${MODNAME}"
