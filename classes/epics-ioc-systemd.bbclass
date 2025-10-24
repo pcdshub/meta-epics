@@ -31,25 +31,25 @@ IOC_ST_CMD ?= "st.cmd"
 # Installs a systemd unit to automatically start the IOC
 install_systemd_unit() {
     U="${D}/etc/systemd/system/${PN}.service"
-    SHS="${D}/opt/epics/${PN}/ioc-start.sh"
+    SHS="${D}/opt/epics/${MODNAME}/ioc-start.sh"
 
     mkdir -p "$(dirname "${U}")"
 
     # Ensure the st.cmd is actually executable (we may exec with ./)
-    chmod +x "${D}/opt/epics/${PN}/${IOC_PATH}/${IOC_ST_CMD}"
+    chmod +x "${D}/opt/epics/${MODNAME}/${IOC_PATH}/${IOC_ST_CMD}"
 
     # Generate a shell script with the launch commands
     echo "#!/usr/bin/env bash" >> ${SHS}
     echo "set -e" >> ${SHS}
-    echo "cd \"/opt/epics/${PN}/${IOC_PATH}\"" >> ${SHS}
+    echo "cd \"/opt/epics/${MODNAME}/${IOC_PATH}\"" >> ${SHS}
     if [ -z "${IOC_APP_NAME}" ]; then
         echo "./${IOC_ST_CMD}" >> ${SHS}
     else
-        echo "/opt/epics/${PN}/bin/linux-${TARGET_ARCH}/${IOC_APP_NAME} ${IOC_ST_CMD}" >> ${SHS}
+        echo "/opt/epics/${MODNAME}/bin/linux-${TARGET_ARCH}/${IOC_APP_NAME} ${IOC_ST_CMD}" >> ${SHS}
     fi
     
     # Make sure it's executable...
-    chmod +x "${D}/opt/epics/${PN}/ioc-start.sh"
+    chmod +x "${D}/opt/epics/${MODNAME}/ioc-start.sh"
 
     # Generate the actual systemd unit
     echo "[Unit]" >> ${U}
@@ -57,7 +57,7 @@ install_systemd_unit() {
     echo "After=network.target" >> ${U}
     echo "[Service]" >> ${U}
     echo "Type=simple" >> ${U}
-    echo "ExecStart=procServ -f -L - -P ${PS_PORT} /opt/epics/${PN}/ioc-start.sh" >> ${U}
+    echo "ExecStart=procServ -f -L - -P ${PS_PORT} /opt/epics/${MODNAME}/ioc-start.sh" >> ${U}
     echo "Restart=on-failure" >> ${U}
     echo "RestartSec=5s" >> ${U}
     echo "[Install]" >> ${U}
@@ -72,6 +72,6 @@ install_systemd_unit() {
 
 do_install[postfuncs] += "install_systemd_unit"
 
-FILES:${PN} += "/opt/epics/${PN}/ioc-start.sh"
+FILES:${PN} += "/opt/epics/${MODNAME}/ioc-start.sh"
 FILES:${PN} += "/etc/systemd/system/${PN}.service"
 FILES:${PN} += "/etc/systemd/system/multi-user.target.wants/${PN}.service"

@@ -3,7 +3,7 @@
 #
 
 # Default module name is the package name
-MODNAME = "${PN}"
+MODNAME ?= "${PN}"
 
 # Add your EPICS dependencies to this variable
 EPICS_DEPENDS = ""
@@ -52,34 +52,34 @@ do_install() {
 }
 
 # Common directories to install for both native and target pkgs
-ALL_FILES += "/opt/epics/${PN}/db"
-ALL_FILES += "/opt/epics/${PN}/dbd"
-ALL_FILES += "/opt/epics/${PN}/include"
-ALL_FILES += "/opt/epics/${PN}/configure"
-ALL_FILES += "/opt/epics/${PN}/cfg"
-ALL_FILES += "/opt/epics/${PN}/templates"
-ALL_FILES += "/opt/epics/${PN}/doc"
-ALL_FILES += "/opt/epics/${PN}/html"
-ALL_FILES += "/opt/epics/${PN}/iocBoot"
-ALL_FILES += "/opt/epics/${PN}/cpuBoot"
-ALL_FILES += "/opt/epics/${PN}/autosave"
-ALL_FILES += "/opt/epics/${PN}/display"
-ALL_FILES += "/opt/epics/${PN}/screens"
-ALL_FILES += "/opt/epics/${PN}/archive"
-ALL_FILES += "/opt/epics/${PN}/iocsh"
-ALL_FILES += "/opt/epics/${PN}/children"
+ALL_FILES += "/opt/epics/${MODNAME}/db"
+ALL_FILES += "/opt/epics/${MODNAME}/dbd"
+ALL_FILES += "/opt/epics/${MODNAME}/include"
+ALL_FILES += "/opt/epics/${MODNAME}/configure"
+ALL_FILES += "/opt/epics/${MODNAME}/cfg"
+ALL_FILES += "/opt/epics/${MODNAME}/templates"
+ALL_FILES += "/opt/epics/${MODNAME}/doc"
+ALL_FILES += "/opt/epics/${MODNAME}/html"
+ALL_FILES += "/opt/epics/${MODNAME}/iocBoot"
+ALL_FILES += "/opt/epics/${MODNAME}/cpuBoot"
+ALL_FILES += "/opt/epics/${MODNAME}/autosave"
+ALL_FILES += "/opt/epics/${MODNAME}/display"
+ALL_FILES += "/opt/epics/${MODNAME}/screens"
+ALL_FILES += "/opt/epics/${MODNAME}/archive"
+ALL_FILES += "/opt/epics/${MODNAME}/iocsh"
+ALL_FILES += "/opt/epics/${MODNAME}/children"
 
 # Build a package for the build host
 PACKAGES += "${PN}-native"
 FILES:${PN}-native += "${ALL_FILES}"
-FILES:${PN}-native += "/opt/epics/${PN}/bin/linux-${BUILD_ARCH}"
-FILES:${PN}-native += "/opt/epics/${PN}/lib/linux-${BUILD_ARCH}"
-FILES:${PN}-native += "/opt/epics/${PN}/lib/perl"
+FILES:${PN}-native += "/opt/epics/${MODNAME}/bin/linux-${BUILD_ARCH}"
+FILES:${PN}-native += "/opt/epics/${MODNAME}/lib/linux-${BUILD_ARCH}"
+FILES:${PN}-native += "/opt/epics/${MODNAME}/lib/perl"
 
 # Build a package for the target system
 FILES:${PN} += "${ALL_FILES}"
-FILES:${PN} += "/opt/epics/${PN}/bin/linux-${TARGET_ARCH}"
-FILES:${PN} += "/opt/epics/${PN}/lib/linux-${TARGET_ARCH}"
+FILES:${PN} += "/opt/epics/${MODNAME}/bin/linux-${TARGET_ARCH}"
+FILES:${PN} += "/opt/epics/${MODNAME}/lib/linux-${TARGET_ARCH}"
 
 # Expose this package in the sysroot
 SYSROOT_DIRS += "/opt/epics/${MODNAME}"
