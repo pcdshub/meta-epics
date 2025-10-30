@@ -116,6 +116,14 @@ do_install() {
     do
         ln -s /opt/epics/${MODNAME}/bin/linux-${TARGET_ARCH}/$prog "${D}/usr/local/bin/$prog"
     done
+
+    # The generated caRepeater.service uses paths in our Yocto tmpdir. Re-run the substitution ourselves and install
+    mkdir -p "${D}/etc/systemd/system/multi-user.target.wants"
+    cp "modules/ca/src/client/caRepeater.service@" "${D}/etc/systemd/system/caRepeater.service"
+    sed -i "s,@INSTALL_BIN@,/opt/epics/${MODNAME}/bin/linux-${TARGET_ARCH},g" "${D}/etc/systemd/system/caRepeater.service"
+    chmod 644 "${D}/etc/systemd/system/caRepeater.service"
+    ln -s "/etc/systemd/system/caRepeater.service" "${D}/etc/systemd/system/multi-user.target.wants/caRepeater.service"
 }
 
 FILES:${PN} += "/usr/local/bin/*"
+FILES:${PN} += "/etc/systemd/system"
