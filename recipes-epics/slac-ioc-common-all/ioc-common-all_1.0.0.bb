@@ -10,9 +10,6 @@ SRC_URI = "git://git@github.com/pcdshub/iocCommon-All;protocol=ssh;branch=pcds-A
 
 S = "${WORKDIR}/git"
 
-# Not a dependency, exactly, but these files aren't useful without EPICS base. 
-RDEPENDS:${PN} = "epics-base"
-
 do_install () {
     INSTALLDIR="${D}/opt/epics/${PN}"
     install -d "$INSTALLDIR"
