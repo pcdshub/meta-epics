@@ -14,7 +14,7 @@ S = "${WORKDIR}/git"
 RDEPENDS:${PN} = "epics-base"
 
 do_install () {
-    INSTALLDIR="${D}/opt/epics/${PN}/${PV}"
+    INSTALLDIR="${D}/opt/epics/${PN}"
     install -d "$INSTALLDIR"
 
     install -m 0755 ${S}/pre_linux.cmd "$INSTALLDIR"

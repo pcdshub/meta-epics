@@ -20,7 +20,7 @@ do_compile () {
 }
 
 do_install () {
-    INSTALLDIR="${D}/opt/epics/${PN}/${PV}"
+    INSTALLDIR="${D}/opt/epics/${PN}"
     install -d "$INSTALLDIR"
 
     install -m 0755 ${S}/RULES_EXPAND "$INSTALLDIR"
