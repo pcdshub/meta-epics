@@ -34,7 +34,7 @@ def get_extra_compiler_flags(d) -> list[str]:
     the EPICS build system in one way or another
     """
     return [
-        f'--sysroot={d.getVar('RECIPE_SYSROOT')}'
+        f'--sysroot={d.getVar("RECIPE_SYSROOT")}'
     ]
 
 def get_depends(d) -> dict:
