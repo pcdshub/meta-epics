@@ -101,6 +101,13 @@ do_compile() {
 do_install() {
     install_dir="${D}/opt/epics/${MODNAME}"
 
+    # Install built or otherwise useful EPICS files
+    # Arch specific files are handled in do_install:append functions below
+    for subdir in configure db dbd include startup templates; do
+        install -d ${install_dir}/$subdir
+        cp -RP --preserve=mode,links -v ${S}/$subdir/* ${install_dir}/$subdir
+    done
+
     mkdir -p "${D}/usr/local/bin"
     for prog in caput caget cainfo camonitor catime caRepeater pvcall pvget pvinfo pvlist pvmonitor pvput
     do
