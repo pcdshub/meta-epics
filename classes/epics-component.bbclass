@@ -12,8 +12,11 @@ EPICS_DEPENDS = ""
 # - staticdev is incompatible with packages that include static libs in the base package.
 # - file-rdeps is incompatible with combined sdk/target packages, where we have a mix of host tools and target bins.
 # - arch is incompatible with -native packages, since they contain binaries for the build host OS
+# - buildpaths is to suppress complaints about the build host (class-native)
+#   package containing references to TMPDIR, which is fine because these are
+#   not installed on the target, only used in compilation of the target package
 INSANE_SKIP:class-target = "file-rdeps staticdev"
-INSANE_SKIP:class-native = "file-rdeps staticdev arch"
+INSANE_SKIP:class-native = "file-rdeps staticdev arch buildpaths"
 
 # Disable stripping and debug split; doesn't work for combined packages like this
 INHIBIT_SYSROOT_STRIP:class-native = "1"
