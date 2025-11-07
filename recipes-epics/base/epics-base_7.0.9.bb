@@ -111,6 +111,10 @@ do_install() {
     # Install EPICS Perl tools
     install -d ${install_dir}/src/tools
     cp -RP --preserve=mode,links -v ${S}/src/tools/* ${install_dir}/src/tools
+
+    # Install more EPICS Perl tools
+    install -d ${install_dir}/lib/perl
+    cp -RP --preserve=mode,links -v ${S}/lib/perl/* ${install_dir}/lib/perl
 }
 
 do_install:append:class-native() {
@@ -150,3 +154,4 @@ do_install:append:class-target() {
 FILES:${PN} += "/usr/local/bin/*"
 FILES:${PN} += "/etc/systemd/system"
 FILES:${PN} += "/opt/epics/${MODNAME}/src/tools/*"
+FILES:${PN} += "/opt/epics/${MODNAME}/lib/perl/*"
