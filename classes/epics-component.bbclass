@@ -68,7 +68,7 @@ ALL_FILES += "/opt/epics/${MODNAME}/iocsh"
 ALL_FILES += "/opt/epics/${MODNAME}/children"
 
 # Build a package for the build host
-#PACKAGES += "${PN}-native"
+PACKAGES += "${PN}-native"
 FILES:${PN}-native += "${ALL_FILES}"
 FILES:${PN}-native += "/opt/epics/${MODNAME}/bin/linux-${BUILD_ARCH}"
 FILES:${PN}-native += "/opt/epics/${MODNAME}/lib/linux-${BUILD_ARCH}"
