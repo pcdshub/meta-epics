@@ -66,13 +66,14 @@ ALL_FILES += "/opt/epics/${MODNAME}/screens"
 ALL_FILES += "/opt/epics/${MODNAME}/archive"
 ALL_FILES += "/opt/epics/${MODNAME}/iocsh"
 ALL_FILES += "/opt/epics/${MODNAME}/children"
+ALL_FILES += "/opt/epics/${MODNAME}/src/tools"
+ALL_FILES += "/opt/epics/${MODNAME}/lib/perl"
+
 
 # Build a package for the build host
 PACKAGES += "${PN}-native"
-FILES:${PN}-native += "${ALL_FILES}"
 FILES:${PN}-native += "/opt/epics/${MODNAME}/bin/linux-${BUILD_ARCH}"
 FILES:${PN}-native += "/opt/epics/${MODNAME}/lib/linux-${BUILD_ARCH}"
-FILES:${PN}-native += "/opt/epics/${MODNAME}/lib/perl"
 
 # Build a package for the target system
 FILES:${PN} += "${ALL_FILES}"
@@ -80,4 +81,9 @@ FILES:${PN} += "/opt/epics/${MODNAME}/bin/linux-${TARGET_ARCH}"
 FILES:${PN} += "/opt/epics/${MODNAME}/lib/linux-${TARGET_ARCH}"
 
 # Expose this package in the sysroot
-SYSROOT_DIRS += "/opt/epics/${MODNAME}"
+SYSROOT_DIRS += "${ALL_FILES}"
+SYSROOT_DIRS += "/opt/epics/${MODNAME}/bin/linux-${TARGET_ARCH}"
+SYSROOT_DIRS += "/opt/epics/${MODNAME}/lib/linux-${TARGET_ARCH}"
+
+SYSROOT_DIRS_NATIVE += "/opt/epics/${MODNAME}/bin/linux-${BUILD_ARCH}"
+SYSROOT_DIRS_NATIVE += "/opt/epics/${MODNAME}/lib/linux-${BUILD_ARCH}"

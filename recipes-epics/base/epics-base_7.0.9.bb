@@ -161,5 +161,3 @@ do_install:append:class-target() {
 
 FILES:${PN} += "/usr/local/bin/*"
 FILES:${PN} += "/etc/systemd/system"
-FILES:${PN} += "/opt/epics/${MODNAME}/src/tools/*"
-FILES:${PN} += "/opt/epics/${MODNAME}/lib/perl/*"
