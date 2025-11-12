@@ -13,6 +13,8 @@ BBCLASSEXTEND =+ "native nativesdk"
 SRCREV = "07572ab02593fa225660fdee670850c9989f5851"
 SRC_URI = "gitsm://github.com/epics-base/epics-base;protocol=https;branch=7.0;rev=${SRCREV}"
 
+SRC_URI += " file://0001-host-build-option.patch "
+
 DEPENDS += " readline"
 
 RDEPENDS:${PN} += " bash perl"
@@ -46,6 +48,8 @@ python do_configure() {
         # Point at /opt/epics; better to do this here to avoid bad file paths
         fp.write(f'INSTALL_LOCATION={install_dir}\n')
         fp.write(f'FINAL_LOCATION={install_dir}\n')
+        # Build only for target architecture(s), not for the build host
+        fp.write('HOST_BUILD=NO\n')
 
     host_arch = epics.host_arch(d)
 
