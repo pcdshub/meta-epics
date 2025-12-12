@@ -108,6 +108,9 @@ def generate_config_site(d, extra: dict = {}):
             # Disable CHECK_RELEASE. Simply not compatile with Yocto due to the different sysroots used to compile
             # each package. Our EPICS_BASE location is never the same between packages.
             fp.write('CHECK_RELEASE=NO\n')
+            # Enable/disable static and shared libs
+            fp.write(f'STATIC_BUILD={"YES" if d.getVar("EPICS_ENABLE_STATIC_LIBS") == "1" else "NO"}\n')
+            fp.write(f'SHARED_LIBRARIES={"YES" if d.getVar("EPICS_ENABLE_SHARED_LIBS") == "1" else "NO"}\n')
             # Enable host build when requested
             if d.getVar('ENABLE_HOST_PACKAGE') == '1':
                 fp.write('HOST_BUILD=YES\n')

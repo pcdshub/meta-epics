@@ -8,6 +8,12 @@ MODNAME ?= "${PN}"
 # Add your EPICS dependencies to this variable
 EPICS_DEPENDS = ""
 
+# Enable static libs
+EPICS_ENABLE_STATIC_LIBS ?= "1"
+
+# Disable shared libs (by default)
+EPICS_ENABLE_SHARED_LIBS ?= "0"
+
 # Disable other checks that are incompatible with the EPICS build style
 # - staticdev is incompatible with packages that include static libs in the base package.
 # - file-rdeps is incompatible with combined sdk/target packages, where we have a mix of host tools and target bins.

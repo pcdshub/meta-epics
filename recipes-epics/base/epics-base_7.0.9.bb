@@ -40,10 +40,9 @@ python do_configure() {
 
     # Write out a CONFIG_SITE.local with our changes
     with open('configure/CONFIG_SITE.local', 'w') as fp:
-        # Disable shared libraries entirely
-        fp.write('SHARED_LIBRARIES=NO\n')
-        # Build static libraries
-        fp.write('STATIC_BUILD=YES\n')
+        # Enable/disable static and shared libs
+        fp.write(f'STATIC_BUILD={"YES" if d.getVar("EPICS_ENABLE_STATIC_LIBS") == "1" else "NO"}\n')
+        fp.write(f'SHARED_LIBRARIES={"YES" if d.getVar("EPICS_ENABLE_SHARED_LIBS") == "1" else "NO"}\n')
         fp.write(f'CROSS_COMPILER_TARGET_ARCHS={target_arch}\n')
         # Point at /opt/epics; better to do this here to avoid bad file paths
         fp.write(f'INSTALL_LOCATION={install_dir}\n')
