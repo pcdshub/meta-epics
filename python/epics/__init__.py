@@ -96,6 +96,8 @@ def generate_config_site(d, extra: dict = {}):
     """
     pfx = d.getVar('D')
     pn = d.getVar('PN')
+    native_root = d.getVar('RECIPE_SYSROOT_NATIVE')
+    harch = host_arch(d)
     # SLAC modules do not support CONFIG_SITE.local, we must use CONFIG_SITE.$(HOST_ARCH).Common instead
     for fn in ['CONFIG_SITE.local', f'CONFIG_SITE.{host_arch(d)}.Common']:
         with open(f'configure/{fn}', 'w') as fp:
@@ -108,6 +110,8 @@ def generate_config_site(d, extra: dict = {}):
             # Disable CHECK_RELEASE. Simply not compatile with Yocto due to the different sysroots used to compile
             # each package. Our EPICS_BASE location is never the same between packages.
             fp.write('CHECK_RELEASE=NO\n')
+            # Locate tools built for build host
+            fp.write(f'TOOLS={native_root}/opt/epics/epics-base/bin/{harch}\n')
             # append extras
             for e, v in extra.items():
                 fp.write(f'{e}={v}\n')
