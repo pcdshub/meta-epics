@@ -38,6 +38,13 @@ do_compile() {
     make -j${BB_NUMBER_THREADS} build
 }
 
+# We can only package files in a single package; this exposes perl tools that
+# are necessary for both host and target builds, which are packaged with the
+# target, to be available to the host build as well.
+do_compile:prepend() {
+    export PERL5LIB="${RECIPE_SYSROOT}/opt/epics/epics-base/lib/perl"
+}
+
 do_install() {
     make -j${BB_NUMBER_THREADS} install
 
