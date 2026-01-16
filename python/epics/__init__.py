@@ -129,7 +129,6 @@ def generate_config_site(d, extra: dict = {}):
         fp.write(f'USR_CPPFLAGS+={sysroot_arg} {d.getVar("CPPFLAGS")}\n')
         fp.write(f'USR_CFLAGS+={sysroot_arg} {d.getVar("CFLAGS")}\n')
         fp.write(f'USR_LDFLAGS+={sysroot_arg} {d.getVar("LDFLAGS")}\n')
-        fp.write(f'USR_DBDFLAGS+=-I {root}/opt/epics/epics-base/lib/perl\n')
 
     # Generate a CONFIG_SITE for HOST options
     host_cfg_site = f'configure/CONFIG_SITE.Common.{host_arch(d)}'
@@ -139,7 +138,6 @@ def generate_config_site(d, extra: dict = {}):
         fp.write(f'USR_CPPFLAGS+={d.getVar("BUILD_CPPFLAGS")}\n')
         fp.write(f'USR_CFLAGS+={d.getVar("BUILD_CFLAGS")}\n')
         fp.write(f'USR_LDFLAGS+={d.getVar("BUILD_LDFLAGS")}\n')
-        fp.write(f'USR_DBDFLAGS+=-I {root}/opt/epics/epics-base/lib/perl\n')
 
     print(f'Generated {target_cfg_site}:')
     _cat_file(target_cfg_site)
