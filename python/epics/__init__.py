@@ -96,12 +96,14 @@ def generate_config_site(d, extra: dict = {}):
     """
     pfx = d.getVar('D')
     pn = d.getVar('PN')
+    root = d.getVar('RECIPE_SYSROOT')
     native_root = d.getVar('RECIPE_SYSROOT_NATIVE')
     harch = host_arch(d)
     # SLAC modules do not support CONFIG_SITE.local, we must use CONFIG_SITE.$(HOST_ARCH).Common instead
     for fn in ['CONFIG_SITE.local', f'CONFIG_SITE.{host_arch(d)}.Common']:
         with open(f'configure/{fn}', 'w') as fp:
             fp.seek(0, io.SEEK_END)
+            fp.write(f'EPICS_BASE_HOST_BIN={native_root}/opt/epics/epics-base/bin/{harch}\n')
             # Tweak location of build products
             fp.write(f'INSTALL_LOCATION={pfx}/opt/epics/{pn}\n')
             fp.write(f'FINAL_LOCATION={pfx}/opt/epics/{pn}\n')
@@ -110,10 +112,6 @@ def generate_config_site(d, extra: dict = {}):
             # Disable CHECK_RELEASE. Simply not compatile with Yocto due to the different sysroots used to compile
             # each package. Our EPICS_BASE location is never the same between packages.
             fp.write('CHECK_RELEASE=NO\n')
-            # Locate tools built for build host
-            fp.write(f'TOOLS={native_root}/opt/epics/epics-base/bin/{harch}\n')
-            # Fix missing msi (FIXME? this should be better)
-            fp.write(f'MSI3_15={native_root}/opt/epics/epics-base/bin/{harch}/msi\n')
             # append extras
             for e, v in extra.items():
                 fp.write(f'{e}={v}\n')
@@ -131,6 +129,7 @@ def generate_config_site(d, extra: dict = {}):
         fp.write(f'USR_CPPFLAGS+={sysroot_arg} {d.getVar("CPPFLAGS")}\n')
         fp.write(f'USR_CFLAGS+={sysroot_arg} {d.getVar("CFLAGS")}\n')
         fp.write(f'USR_LDFLAGS+={sysroot_arg} {d.getVar("LDFLAGS")}\n')
+        fp.write(f'USR_DBDFLAGS+=-I {root}/opt/epics/epics-base/lib/perl\n')
 
     # Generate a CONFIG_SITE for HOST options
     host_cfg_site = f'configure/CONFIG_SITE.Common.{host_arch(d)}'
@@ -140,6 +139,7 @@ def generate_config_site(d, extra: dict = {}):
         fp.write(f'USR_CPPFLAGS+={d.getVar("BUILD_CPPFLAGS")}\n')
         fp.write(f'USR_CFLAGS+={d.getVar("BUILD_CFLAGS")}\n')
         fp.write(f'USR_LDFLAGS+={d.getVar("BUILD_LDFLAGS")}\n')
+        fp.write(f'USR_DBDFLAGS+=-I {root}/opt/epics/epics-base/lib/perl\n')
 
     print(f'Generated {target_cfg_site}:')
     _cat_file(target_cfg_site)
