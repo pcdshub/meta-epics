@@ -42,11 +42,15 @@ python do_configure() {
 
     # Write out a CONFIG_SITE.local with our changes
     with open('configure/CONFIG_SITE.local', 'w') as fp:
-        # Disable shared libraries entirely
-        fp.write('SHARED_LIBRARIES=NO\n')
-        # Build static libraries
-        fp.write('STATIC_BUILD=YES\n')
+        # Enable/disable static and shared libs
+        fp.write(f'STATIC_BUILD={"YES" if d.getVar("EPICS_ENABLE_STATIC_LIBS") == "1" else "NO"}\n')
+        fp.write(f'SHARED_LIBRARIES={"YES" if d.getVar("EPICS_ENABLE_SHARED_LIBS") == "1" else "NO"}\n')
         fp.write(f'CROSS_COMPILER_TARGET_ARCHS={target_arch}\n')
+
+        # Point at /opt/epics; better to do this here to avoid bad file paths
+        fp.write(f'INSTALL_LOCATION={install_dir}\n')
+        fp.write(f'FINAL_LOCATION=/opt/epics/{PN}\n')
+
         # Build only for target architecture(s), not for the build host
         fp.write('HOST_BUILD=NO\n')
 
@@ -157,10 +161,9 @@ do_install:append:class-target() {
         ln -s /opt/epics/${MODNAME}/bin/linux-${TARGET_ARCH}/$prog "${D}/usr/local/bin/$prog"
     done
 
-    # The generated caRepeater.service uses paths in our Yocto tmpdir. Re-run the substitution ourselves and install
+    # Install the generated caRepeater.service
     mkdir -p "${D}/etc/systemd/system/multi-user.target.wants"
-    cp "modules/ca/src/client/caRepeater.service@" "${D}/etc/systemd/system/caRepeater.service"
-    sed -i "s,@INSTALL_BIN@,/opt/epics/${MODNAME}/bin/linux-${TARGET_ARCH},g" "${D}/etc/systemd/system/caRepeater.service"
+    cp "${D}/opt/epics/${MODNAME}/bin/linux-${TARGET_ARCH}/caRepeater.service" "${D}/etc/systemd/system/caRepeater.service"
     chmod 644 "${D}/etc/systemd/system/caRepeater.service"
     ln -s "/etc/systemd/system/caRepeater.service" "${D}/etc/systemd/system/multi-user.target.wants/caRepeater.service"
 }
