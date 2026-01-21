@@ -96,10 +96,14 @@ def generate_config_site(d, extra: dict = {}):
     """
     pfx = d.getVar('D')
     pn = d.getVar('PN')
+    root = d.getVar('RECIPE_SYSROOT')
+    native_root = d.getVar('RECIPE_SYSROOT_NATIVE')
+    harch = host_arch(d)
     # SLAC modules do not support CONFIG_SITE.local, we must use CONFIG_SITE.$(HOST_ARCH).Common instead
     for fn in ['CONFIG_SITE.local', f'CONFIG_SITE.{host_arch(d)}.Common']:
         with open(f'configure/{fn}', 'w') as fp:
             fp.seek(0, io.SEEK_END)
+            fp.write(f'EPICS_BASE_HOST_BIN={native_root}/opt/epics/epics-base/bin/{harch}\n')
             # Tweak location of build products
             fp.write(f'INSTALL_LOCATION={pfx}/opt/epics/{pn}\n')
             fp.write(f'FINAL_LOCATION=/opt/epics/{pn}\n')

@@ -6,9 +6,11 @@ DESCRIPTION = "Recipe for building EPICS base, the core component of the EPICS c
 LICENSE = "EPICS"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=2eeea17a15fc6ba8501fdcec09b854dc"
 LICENSE_PATH += "${S}"
-#NO_GENERIC_LICENSE[EPICS] = "LICENSE"
 
-BBCLASSEXTEND =+ "native nativesdk"
+BBCLASSEXTEND = "native nativesdk"
+
+# Force MODNAME to epics-base for both native and target recipe
+MODNAME = "epics-base"
 
 SRCREV = "07572ab02593fa225660fdee670850c9989f5851"
 SRC_URI = "gitsm://github.com/epics-base/epics-base;protocol=https;branch=7.0;rev=${SRCREV}"
@@ -44,9 +46,11 @@ python do_configure() {
         fp.write(f'STATIC_BUILD={"YES" if d.getVar("EPICS_ENABLE_STATIC_LIBS") == "1" else "NO"}\n')
         fp.write(f'SHARED_LIBRARIES={"YES" if d.getVar("EPICS_ENABLE_SHARED_LIBS") == "1" else "NO"}\n')
         fp.write(f'CROSS_COMPILER_TARGET_ARCHS={target_arch}\n')
+
         # Point at /opt/epics; better to do this here to avoid bad file paths
         fp.write(f'INSTALL_LOCATION={install_dir}\n')
         fp.write(f'FINAL_LOCATION=/opt/epics/{PN}\n')
+
         # Build only for target architecture(s), not for the build host
         fp.write('HOST_BUILD=NO\n')
 
@@ -81,39 +85,76 @@ python do_configure() {
         # Ensure we use GNU hash style, because that's what Yocto expects...
         # Can't pull in the entire BUILD_LDFLAGS var here, that needs to be done on the command line
         fp.write(f'USR_LDFLAGS+=-Wl,--hash-style=gnu\n')
-
-    # NOTE: Build is actually done during the do_install() process
-    # Installing files here will result in them being clobbered before do_install.
-    # make build.${TGTARCH} would work (in theory), but the build process relies on msi
-    # and other EPICS tools that are generated+installed as part of the install.xxx targets.
 }
 
 do_compile() {
-    echo "Skipping; all work done in do_install"
-}
-
-do_install() {
-    install_dir="${D}/opt/epics/${MODNAME}"
-
-    # Build base with the build host flags
+    # Bring in the env flags. These must be supplied on the command line *only* because they
+    # may contain package specific settings (i.e. --sysroot=). Putting them in a CONFIG_SITE.Common file
+    # will result in them being passed down to other EPICS packages.
+    # Build base with the build host and target flags
     make -j${BB_NUMBER_THREADS} \
         USR_CFLAGS="${BUILD_CFLAGS}" \
         USR_CXXFLAGS="${BUILD_CXXFLAGS}" \
         USR_LDFLAGS="${BUILD_LDFLAGS}" \
         install.linux-${BUILD_ARCH}
+}
 
-    # Bring in the env flags. These must be supplied on the command line *only* because they
-    # may contain package specific settings (i.e. --sysroot=). Putting them in a CONFIG_SITE.Common file
-    # will result in them being passed down to other EPICS packages.
+do_compile:append:class-target() {
     make -j${BB_NUMBER_THREADS} \
         USR_CFLAGS="${CFLAGS}" \
         USR_CXXFLAGS="${CXXFLAGS}" \
         USR_LDFLAGS="${LDFLAGS}" \
         install.linux-${TARGET_ARCH}
+}
 
-    # Need to remove these so we pass the stupid tmpdir sanity check...
-    rm -rf "${install_dir}/lib/pkgconfig"
+do_install() {
+    install_dir="${D}/opt/epics/${MODNAME}"
 
+    # Install built or otherwise useful EPICS files
+    # Arch specific files are handled in do_install:append functions below
+    for subdir in configure cfg db dbd include templates; do
+        install -d ${install_dir}/$subdir
+        cp -RP --preserve=mode,links -v ${S}/$subdir/* ${install_dir}/$subdir
+    done
+
+    # Install EPICS Perl tools
+    install -d ${install_dir}/src/tools
+    cp -RP --preserve=mode,links -v ${S}/src/tools/* ${install_dir}/src/tools
+
+    # Install more EPICS Perl tools
+    # Have to be more specific here rather than copying _everything_ because
+    # of libCap5.so that gets generated for the build host under this directory
+    for subdir in DBD EPICS Pod URI; do
+        install -d ${install_dir}/lib/perl/${subdir}
+        cp -RP --preserve=mode,links -v ${S}/lib/perl/${subdir}/* ${install_dir}/lib/perl/${subdir}
+    done
+
+    for fname in CA.pm DBD.pm EpicsHostArch.pl; do
+        install -m 0755 ${S}/lib/perl/$fname ${install_dir}/lib/perl/$fname
+    done
+
+    # Regardless of target or native build, the TARGET_ARCH is correct
+    install_bin="${D}/opt/epics/${MODNAME}/bin/linux-${TARGET_ARCH}"
+    install -d ${install_bin}
+    cp -RP --preserve=mode,links -v ${S}/bin/linux-${TARGET_ARCH}/* ${install_bin}
+
+    install_lib="${D}/opt/epics/${MODNAME}/lib/linux-${TARGET_ARCH}"
+    install -d ${install_lib}
+    cp -RP --preserve=mode,links -v ${S}/lib/linux-${TARGET_ARCH}/* ${install_lib}
+}
+
+do_install:append:class-native() {
+    native_bin="${D}${STAGING_DIR_NATIVE}/opt/epics/${MODNAME}/bin/linux-${BUILD_ARCH}"
+    install -d ${native_bin}
+    cp -RP --preserve=mode,links -v ${S}/bin/linux-${BUILD_ARCH}/* ${native_bin}
+
+    native_lib="${D}${STAGING_DIR_NATIVE}/opt/epics/${MODNAME}/lib/linux-${BUILD_ARCH}"
+    install -d ${native_lib}
+    cp -RP --preserve=mode,links -v ${S}/lib/linux-${BUILD_ARCH}/* ${native_lib}
+}
+
+do_install:append:class-target() {
+    # Symlink commonly used EPICS CLI tools
     mkdir -p "${D}/usr/local/bin"
     for prog in caput caget cainfo camonitor catime caRepeater pvcall pvget pvinfo pvlist pvmonitor pvput
     do
@@ -127,5 +168,5 @@ do_install() {
     ln -s "/etc/systemd/system/caRepeater.service" "${D}/etc/systemd/system/multi-user.target.wants/caRepeater.service"
 }
 
-FILES:${PN} += "/usr/local/bin/*"
-FILES:${PN} += "/etc/systemd/system"
+FILES:${PN}:append:class-target = " /usr/local/bin"
+FILES:${PN}:append:class-target = " /etc/systemd/system"

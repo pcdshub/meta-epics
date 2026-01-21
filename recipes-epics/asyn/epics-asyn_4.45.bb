@@ -24,3 +24,15 @@ python do_configure() {
         "TIRPC": "YES"
     })
 }
+
+# Same install method as in epics-component.bbclass but we don't copy iocBoot dirs
+do_install() {
+    make -j${BB_NUMBER_THREADS} install
+
+    # Remove unnecessary test binaries from this package
+    rm -r ${D}/opt/epics/${MODNAME}/bin
+
+    # Remove unnecessary test libraries from this package
+    rm ${D}/opt/epics/${MODNAME}/lib/linux-${TARGET_ARCH}/libtest*.a
+    rm ${D}/opt/epics/${MODNAME}/lib/linux-${TARGET_ARCH}/libdevTestGpib.a
+}
