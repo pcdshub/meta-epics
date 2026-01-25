@@ -15,7 +15,10 @@ MODNAME = "epics-base"
 SRCREV = "07572ab02593fa225660fdee670850c9989f5851"
 SRC_URI = "gitsm://github.com/epics-base/epics-base;protocol=https;branch=7.0;rev=${SRCREV}"
 
-SRC_URI += " file://0001-host-build-option.patch "
+SRC_URI += " \
+            file://0001-host-build-option.patch \
+            file://0002-additional-install-rules.patch \
+           "
 
 DEPENDS += " readline"
 
