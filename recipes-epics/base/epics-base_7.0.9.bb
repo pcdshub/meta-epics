@@ -48,7 +48,7 @@ python do_configure() {
         fp.write(f'CROSS_COMPILER_TARGET_ARCHS={target_arch}\n')
 
         # Point at /opt/epics; better to do this here to avoid bad file paths
-        fp.write(f'INSTALL_LOCATION={install_dir}\n')
+        #TODO: fp.write(f'INSTALL_LOCATION={install_dir}\n')
         fp.write(f'FINAL_LOCATION=/opt/epics/{PN}\n')
 
         # Build only for target architecture(s), not for the build host
