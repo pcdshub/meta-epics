@@ -95,7 +95,7 @@ def generate_config_site(d, extra: dict = {}):
         Name -> value mapping
     """
     pfx = d.getVar('D')
-    pn = d.getVar('PN')
+    mn = d.getVar('MODNAME')
     root = d.getVar('RECIPE_SYSROOT')
     native_root = d.getVar('RECIPE_SYSROOT_NATIVE')
     harch = host_arch(d)
@@ -105,10 +105,10 @@ def generate_config_site(d, extra: dict = {}):
             fp.seek(0, io.SEEK_END)
             fp.write(f'EPICS_BASE_HOST_BIN={native_root}/opt/epics/epics-base/bin/{harch}\n')
             # Tweak location of build products
-            fp.write(f'INSTALL_LOCATION={pfx}/opt/epics/{pn}\n')
-            fp.write(f'FINAL_LOCATION=/opt/epics/{pn}\n')
+            fp.write(f'INSTALL_LOCATION={pfx}/opt/epics/{mn}\n')
+            fp.write(f'FINAL_LOCATION=/opt/epics/{mn}\n')
             # iocBoot/cpuBoot will be installed here too, but only run under the target.
-            fp.write(f'IOCS_APPL_TOP=/opt/epics/{pn}\n')
+            fp.write(f'IOCS_APPL_TOP=/opt/epics/{mn}\n')
             # Disable CHECK_RELEASE. Simply not compatile with Yocto due to the different sysroots used to compile
             # each package. Our EPICS_BASE location is never the same between packages.
             fp.write('CHECK_RELEASE=NO\n')
