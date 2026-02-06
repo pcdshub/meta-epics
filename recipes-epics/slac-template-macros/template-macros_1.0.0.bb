@@ -35,3 +35,5 @@ FILES:${PN} += " \
     /opt/epics/${PN}/expand.py \
     /opt/epics/${PN}/realpath \
 "
+
+SYSROOT_DIRS += "/opt/epics/${PN}"
