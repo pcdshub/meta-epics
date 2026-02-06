@@ -7,7 +7,4 @@
 
 inherit epics-ioc-systemd 
 
-
 EPICS_DEPENDS += "template-macros"
-
-DEPENDS += "template-macros ${EPICS_DEPENDS}"
