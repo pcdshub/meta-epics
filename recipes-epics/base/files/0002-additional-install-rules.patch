@@ -1,0 +1,544 @@
+commit 7755f2438ff239770c322af09371cabdfba4bbbe
+Author: Bruce Hill <bhill@slac.stanford.edu>
+Date:   Thu Nov 16 00:32:28 2017 -0800
+
+    Add custom rules for autosave, archive, alh, and Restore files.
+    
+    Also allows building db and other generated files from ioc directories.
+    
+    Also made sure *.cmd and *.proto files can be installed via CMD += and PROTO +=.
+    Default INSTALL dir for both is INSTALL_LOCATION/db, but that can be overridden
+    by redefining INSTALL_CMD and INSTALL_PROTO.
+    
+    Build fix for templated IOC archive and request files
+
+diff --git a/configure/CONFIG_COMMON b/configure/CONFIG_COMMON
+index c37b47238..2538acf9f 100644
+--- a/configure/CONFIG_COMMON
++++ b/configure/CONFIG_COMMON
+@@ -58,6 +58,10 @@ GNU_DIR = /usr
+ INSTALL_LOCATION            = $(TOP)
+ INSTALL_ABSOLUTE            = $(abspath $(INSTALL_LOCATION))
+ 
++# SLAC Specific Install locations
++INSTALL_ARCHIVE             = $(INSTALL_LOCATION)/archive
++INSTALL_AUTOSAVE            = $(INSTALL_LOCATION)/autosave
++
+ INSTALL_LOCATION_LIB        = $(INSTALL_LOCATION)/lib
+ INSTALL_LOCATION_BIN        = $(INSTALL_LOCATION)/bin
+ 
+diff --git a/configure/CONFIG_FILE_TYPE b/configure/CONFIG_FILE_TYPE
+index b7870d7e5..64c6cdfd0 100644
+--- a/configure/CONFIG_FILE_TYPE
++++ b/configure/CONFIG_FILE_TYPE
+@@ -62,6 +62,9 @@ INSTALL_PERL_MODULES = $(INSTALL_LOCATION_LIB)/perl
+ FILE_TYPE += PKGCONFIG
+ INSTALL_PKGCONFIG = $(INSTALL_LOCATION_LIB)/pkgconfig
+ 
++FILE_TYPE += RESTORE
++INSTALL_RESTORE = $(INSTALL_LOCATION)/restore
++
+ INSTALLS_CFG = $(CFG:%= $(INSTALL_CFG)/%)
+ DIRECTORY_TARGETS += $(foreach type, $(FILE_TYPE),$(INSTALL_$(type)))
+ 
+diff --git a/configure/CONFIG_SITE b/configure/CONFIG_SITE
+index 03ec6d114..63c84d3cc 100644
+--- a/configure/CONFIG_SITE
++++ b/configure/CONFIG_SITE
+@@ -11,6 +11,12 @@
+ #  CONFIG_SITE  - Global site configuration file
+ #
+ 
++# Add SLAC specific file types
++FILE_TYPE += PROTO
++INSTALL_PROTO = $(INSTALL_LOCATION)/db
++FILE_TYPE += CMD
++INSTALL_CMD = $(INSTALL_LOCATION)/db
++
+ #  The host architecture performing the build, in the form
+ #       <operating system>-<architecture>[-<toolset>]
+ #
+diff --git a/configure/RULES.Alarm b/configure/RULES.Alarm
+new file mode 100644
+index 000000000..cefe9460b
+--- /dev/null
++++ b/configure/RULES.Alarm
+@@ -0,0 +1,97 @@
++# Where to install configuration files for ALH (Alarm Handler)
++
++vpath %.alhConfig $(USR_VPATH) $(GENERIC_SRC_DIRS) $(dir $(ALH))
++vpath %.alhsubstitutions $(USR_VPATH) $(GENERIC_SRC_DIRS) $(COMMON_DIR)
++
++INSTALL_ALH = $(INSTALL_LOCATION)/alh
++
++##################################################### Restore Flags
++
++INSTALL_ALHFLAGS = -I $(INSTALL_ALH)
++RELEASE_ALHFLAGS = $(patsubst %/dbd,%/restore, $(RELEASE_DBDFLAGS))
++ALHFLAGS  = $($*_ALHFLAGS) $(USR_ALHFLAGS) -I. $(GENERIC_SRC_INCLUDES) $(INSTALL_ALHFLAGS) $(RELEASE_ALHFLAGS)
++ALHFLAGS += -I$(COMMON_DIR)
++
++#####################################################  Targets
++
++INSTALL_ALHS += $(addprefix $(INSTALL_ALH)/,$(notdir $(ALHS)))
++
++COMMON_ALHS += $(filter $(COMMON_DIR)/%, $(foreach file, $(ALHS), \
++    $(firstword  $(SOURCE_ALHS) $(COMMON_DIR)/$(file) ) ) )
++SOURCE_ALHS = $(wildcard $(file) $(SOURCE_ALHS_bbb) )
++SOURCE_ALHS_bbb = $(foreach dir, $(GENERIC_SRC_DIRS), $(SOURCE_ALHS_aaa)  )
++SOURCE_ALHS_aaa = $(addsuffix /$(file), $(dir) )
++
++COMMONS = $(COMMON_DIR)/*.alhConfig \
++          $(COMMON_DIR)/*.alhsubstitutions
++
++##################################################### 
++
++ifndef T_A
++
++COMMON_DIR = .
++INSTALL_ALHS =
++COMMON_ALHS = .
++COMMONS = $(ALHS)
++
++-include $(TOP)/configure/O.$(EPICS_HOST_ARCH)/CONFIG_APP_INCLUDE
++
++all:    install
++
++install: buildInstall
++
++buildInstall : build
++
++rebuild: clean install
++
++.PHONY: all inc build install clean rebuild buildInstall
++
++endif # T_A defined
++
++ifneq (,$(strip $(ALH_INSTALLS)))
++buildInstall : restoreInstalls
++endif
++
++.PHONY: restoreInstalls
++
++build : $(COMMON_ALHS) \
++	$(INSTALL_ALHS)
++
++clean: 
++	@$(RM) $(COMMONS)
++
++##################################################### Substitution files
++
++$(INSTALL_ALH)/%.alhsubstitutions: %.alhsubstitutions
++	@echo "Installing alhsubstitutions file $@"
++	@$(INSTALL) -d -m 644 $< $(@D)
++
++.PRECIOUS: $(COMMON_DIR)/%.alhsubstitutions
++
++##################################################### alhConfig files
++
++$(COMMON_DIR)/%.alhConfig: %.alhsubstitutions
++	@echo "Inflating alhConfig from $< using local rule"
++	@$(RM) $@
++	@echo "$(MSI3_15) -S$< > $(@F) </dev/null"
++	@$(MSI3_15) -I.. $(ALHFLAGS) -S$< </dev/null > $@
++
++$(INSTALL_ALH)/%.alhConfig: $(COMMON_DIR)/%.alhConfig
++	@echo "Installing alhConfig file $@"
++	@$(INSTALL) -d -m 644 $< $(@D)
++
++$(INSTALL_ALH)/%: %
++	@echo "Installing restore file $@"
++	@$(INSTALL) -d -m 644 $< $(@D)
++
++$(INSTALL_ALH)/%: ../%
++	@echo "Installing restore file $@"
++	@$(INSTALL) -d -m 644 $< $(@D)
++
++restoreInstalls:  $(ALH_INSTALLS)
++	@echo "Installing $(^F)"
++	@$(INSTALL) -d -m 555 $^ $(INSTALL_ALH)
++
++.PRECIOUS: $(COMMON_ALHS)
++
++##################################################### END OF FILE
+diff --git a/configure/RULES.Restore b/configure/RULES.Restore
+new file mode 100644
+index 000000000..75350061b
+--- /dev/null
++++ b/configure/RULES.Restore
+@@ -0,0 +1,83 @@
++# Where to install configuration files for ChannelWatcher
++# RULES for building and installing ChannelWatcher *.cwConfig files
++
++# Display how this makefile was called
++#$(info RULES.Restore: '$(MAKECMDGOALS)')
++
++####################################################
++# Where to find ChannelWatcher files
++vpath %.cw              $(USR_VPATH) $(GENERIC_SRC_DIRS) $(dir $(RESTORE))
++vpath %.cwConfig        $(USR_VPATH) $(GENERIC_SRC_DIRS) $(dir $(RESTORE))
++vpath %.tpl-cw          $(USR_VPATH) $(GENERIC_SRC_DIRS) $(dir $(RESTORE))
++vpath %.sub-cw          $(USR_VPATH) $(GENERIC_SRC_DIRS) $(dir $(RESTORE))
++vpath %.cwsubstitutions $(USR_VPATH) $(GENERIC_SRC_DIRS) $(dir $(RESTORE))
++
++# Install ChannelWatcher files here
++INSTALL_RESTORE = $(INSTALL_LOCATION)/restore
++
++####################################################
++# channelWatcher include Flags (msi -I path)
++define  RESTORE_DIRS_template
++  RELEASE_RESTORE_DIRS += $$(wildcard $$(strip $$($(1)))/restore)
++endef
++$(foreach top, $(RELEASE_TOPS), \
++	$(eval $(call RESTORE_DIRS_template,$(top)) ))
++RESTORE_SEARCH_DIRS = . .. $(COMMON_DIR) $(SRC_DIRS) $(INSTALL_RESTORE) $(TOP)/archive $(RELEASE_RESTORE_DIRS)
++RESTORE_INCLUDES = $(addprefix -I, $(RESTORE_SEARCH_DIRS))
++RESTOREFLAGS  = $($*_RESTOREFLAGS) $(USR_RESTOREFLAGS) $(RESTORE_INCLUDES)
++
++####################################################
++# Generate COMMON_RESTORES list
++COMMON_RESTORES  += $(filter $(COMMON_DIR)/%, \
++	$(foreach file, $(RESTORE), \
++		$(firstword $(SOURCE_RESTORES) $(COMMON_DIR)/$(file) ) ) )
++SOURCE_RESTORES = $(wildcard $(file) $(SOURCE_RESTORES_bbb) )
++SOURCE_RESTORES_bbb = $(foreach dir, $(GENERIC_SRC_DIRS), $(SOURCE_RESTORES_aaa)  )
++SOURCE_RESTORES_aaa = $(addsuffix /$(file), $(dir) )
++
++# Generate INSTALL_RESTORES list
++INSTALL_RESTORES += $(addprefix $(INSTALL_RESTORE)/, $(notdir $(RESTORE)))
++
++####################################################
++# Generate RESTORE_DEPENDS_FILES list
++RESTORE_DEPENDS_FILES += $(addsuffix $(DEP), $(patsubst $(COMMON_DIR)/%,%,$(COMMON_RESTORES)))
++
++####################################################
++# Build targets
++
++install:        $(INSTALL_RESTORES)
++
++build:          $(COMMON_RESTORES)
++
++####################################################
++# Build and install Rules
++
++$(INSTALL_RESTORE)/%: %
++	@$(ECHO) "Installing cwConfig file $@"
++	@$(INSTALL) -d -m 644 $< $(@D)
++
++$(COMMON_DIR)/%.cwConfig: %.sub-cw
++	$(RM) $(notdir $@)$(DEP)
++	$(MKMF) -m $(notdir $@)$(DEP) $(RESTORE_INCLUDES) $@ $< 
++	@$(ECHO) "Inflating cwConfig from $<"
++	@$(RM) $@
++	$(MSI3_15) $(RESTOREFLAGS) -S$< > $@
++
++$(COMMON_DIR)/%.cwConfig: %.cwsubstitutions
++	$(RM) $(notdir $@)$(DEP)
++	$(MKMF) -m $(notdir $@)$(DEP) $(RESTORE_INCLUDES) $@ $< 
++	@$(ECHO) "Inflating cwConfig from $<"
++	@$(RM) $@
++	$(MSI3_15) $(RESTOREFLAGS) -S$< > $@
++
++$(INSTALL_RESTORE)/%.cwConfig: $(COMMON_DIR)/%.cwConfig
++	@$(ECHO) "Installing generated cwConfig file $@"
++	@$(INSTALL) -d -m 644 $< $(@D)
++
++#####################################################
++# Include ChannelWatcher config dependency files
++ifneq (,$(strip $(RESTORE_DEPENDS_FILES)))
++-include $(RESTORE_DEPENDS_FILES)
++endif
++
++##################################################### END OF FILE
+diff --git a/configure/RULES.alh b/configure/RULES.alh
+new file mode 100644
+index 000000000..2765bb11a
+--- /dev/null
++++ b/configure/RULES.alh
+@@ -0,0 +1,82 @@
++# RULES.alh
++# RULES for building and installing alarm handler files
++
++# Display how this makefile was called
++#$(info RULES.alh: '$(MAKECMDGOALS)')
++
++####################################################
++# Where to find Alarm Handler files
++#vpath %.alhConfig        $(USR_VPATH) $(GENERIC_SRC_DIRS) $(dir $(ALH))
++vpath %.alhConfig        $(USR_VPATH) $(GENERIC_SRC_DIRS) $(dir $(ALH)) $(COMMON_DIR) 
++vpath %.tpl-alh          $(USR_VPATH) $(GENERIC_SRC_DIRS) $(dir $(ALH))
++vpath %.sub-alh 	     $(USR_VPATH) $(GENERIC_SRC_DIRS) $(dir $(ALH))
++vpath %.alhsubstitutions $(USR_VPATH) $(GENERIC_SRC_DIRS)
++
++# Install Alarm Handler files here
++INSTALL_ALH = $(INSTALL_LOCATION)/alh
++
++####################################################
++# Alarm Handler include Flags (msi -I path)
++define  ALH_DIRS_template
++  RELEASE_ALH_DIRS += $$(wildcard $$(strip $$($(1)))/alh)
++endef
++$(foreach top, $(RELEASE_TOPS), \
++	$(eval $(call ALH_DIRS_template,$(top)) ))
++ALH_SEARCH_DIRS = . .. $(COMMON_DIR) $(SRC_DIRS) $(INSTALL_ALH) $(RELEASE_ALH_DIRS)
++ALH_INCLUDES = $(addprefix -I, $(ALH_SEARCH_DIRS))
++ALHFLAGS  = $($*_ALHFLAGS) $(USR_ALHFLAGS) $(ALH_INCLUDES)
++
++####################################################
++# Generate COMMON_ALHS list
++COMMON_ALHS  += $(filter $(COMMON_DIR)/%, \
++	$(foreach file, $(ALH), \
++		$(firstword $(SOURCE_ALH) $(COMMON_DIR)/$(file) ) ) )
++SOURCE_ALH = $(wildcard $(file) $(SOURCE_ALH_bbb) )
++SOURCE_ALH_bbb = $(foreach dir, $(GENERIC_SRC_DIRS), $(SOURCE_ALH_aaa)  )
++SOURCE_ALH_aaa = $(addsuffix /$(file), $(dir) )
++
++# Generate INSTALL_ALHS list
++INSTALL_ALHS += $(addprefix $(INSTALL_ALH)/,$(notdir $(ALH)))
++
++####################################################
++# Generate ALH_DEPENDS_FILES list
++ALH_DEPENDS_FILES += $(addsuffix $(DEP), $(patsubst $(COMMON_DIR)/%,%,$(COMMON_ALHS)))
++
++####################################################
++# Build targets
++
++install:        $(INSTALL_ALHS)
++
++build:          $(COMMON_ALHS)
++
++####################################################
++# Build and install Rules
++
++$(INSTALL_ALH)/%:	%
++	@$(ECHO) "Installing alh file $@"
++	@$(INSTALL) -d -m 644 $< $(@D)
++
++$(COMMON_DIR)/%.alhConfig: %.sub-alh
++	@$(RM) $(notdir $@)$(DEP)
++	$(MKMF) -m $(notdir $@)$(DEP) $(ALH_INCLUDES) $@ $< 
++	@$(ECHO) "Inflating alh file from $<"
++	@$(RM) $@
++	$(MSI3_15) $(ALHFLAGS) -S$< > $@
++
++$(COMMON_DIR)/%.alhConfig: %.alhsubstitutions
++	@$(RM) $(notdir $@)$(DEP)
++	$(MKMF) -m $(notdir $@)$(DEP) $(ALH_INCLUDES) $@ $< 
++	@$(ECHO) "Inflating alh file from $<"
++	@$(RM) $@
++	$(MSI3_15) $(ALHFLAGS) -S$< > $@
++
++$(INSTALL_ALH)/%: $(COMMON_DIR)/%
++	@$(ECHO) "Installing inflated alh file $@"
++	@$(INSTALL) -d -m 644 $< $(@D)
++
++#####################################################
++# Include archive dependency files
++ifneq (,$(strip $(ALH_DEPENDS_FILES)))
++-include $(ALH_DEPENDS_FILES)
++endif
++
+diff --git a/configure/RULES.archive b/configure/RULES.archive
+new file mode 100644
+index 000000000..0349fabea
+--- /dev/null
++++ b/configure/RULES.archive
+@@ -0,0 +1,73 @@
++# RULES.archive
++# RULES for building and installing archive files
++
++# Display how this makefile was called
++#$(info RULES.archive: '$(MAKECMDGOALS)')
++
++####################################################
++# Where to find archive files
++vpath %.archive       $(USR_VPATH) $(GENERIC_SRC_DIRS) $(dir $(ARCHIVE))
++vpath %.tpl-arch      $(USR_VPATH) $(GENERIC_SRC_DIRS) $(dir $(ARCHIVE)) $(COMMON_DIR)
++vpath %.sub-arch	  $(USR_VPATH) $(GENERIC_SRC_DIRS) $(dir $(ARCHIVE)) $(COMMON_DIR)
++
++# Install archive files here
++INSTALL_ARCHIVE = $(INSTALL_LOCATION)/archive
++
++####################################################
++# archive include Flags (msi -I path)
++define  ARCHIVE_DIRS_template
++  RELEASE_ARCHIVE_DIRS += $$(wildcard $$(strip $$($(1)))/archive)
++endef
++$(foreach top, $(RELEASE_TOPS), \
++	$(eval $(call ARCHIVE_DIRS_template,$(top)) ))
++ARCHIVE_SEARCH_DIRS = . .. $(COMMON_DIR) $(SRC_DIRS) $(INSTALL_ARCHIVE) $(TOP)/archive $(RELEASE_ARCHIVE_DIRS)
++ARCHIVE_INCLUDES = $(addprefix -I, $(ARCHIVE_SEARCH_DIRS))
++ARCHIVEFLAGS  = $($*_ARCHIVEFLAGS) $(USR_ARCHIVEFLAGS) $(ARCHIVE_INCLUDES)
++
++####################################################
++# Generate COMMON_ARCHIVES list
++COMMON_ARCHIVES  += $(filter $(COMMON_DIR)/%, \
++	$(foreach file, $(ARCHIVE), \
++		$(firstword $(SOURCE_ARCHIVE) $(COMMON_DIR)/$(file) ) ) )
++SOURCE_ARCHIVE = $(wildcard $(file) $(SOURCE_ARCHIVE_bbb) )
++SOURCE_ARCHIVE_bbb = $(foreach dir, $(GENERIC_SRC_DIRS), $(SOURCE_ARCHIVE_aaa)  )
++SOURCE_ARCHIVE_aaa = $(addsuffix /$(file), $(dir) )
++
++# Generate INSTALL_ARCHIVES list
++INSTALL_ARCHIVES += $(addprefix $(INSTALL_ARCHIVE)/, $(notdir $(ARCHIVE)))
++
++####################################################
++# Generate ARCHIVE_DEPENDS_FILES list
++ARCHIVE_DEPENDS_FILES += $(addsuffix $(DEP), $(patsubst $(COMMON_DIR)/%,%,$(COMMON_ARCHIVES)))
++
++####################################################
++# Build targets
++
++install:        $(INSTALL_ARCHIVES)
++
++build:          $(COMMON_ARCHIVES)
++
++####################################################
++# Build and install Rules
++
++$(INSTALL_ARCHIVE)/%:	%
++	@$(ECHO) "Installing archive file $@"
++	@$(INSTALL) -d -m 644 $< $(@D)
++
++$(COMMON_DIR)/%.archive %.archive: %.sub-arch
++	@$(RM) $(notdir $@)$(DEP)
++	$(MKMF) -m $(notdir $@)$(DEP) $(ARCHIVE_INCLUDES) $@ $< 
++	@$(ECHO) "Inflating archive file from $<"
++	@$(RM) $@
++	$(MSI3_15) $(ARCHIVEFLAGS) -S$< > $@
++
++$(INSTALL_ARCHIVE)/%: $(COMMON_DIR)/%
++	@$(ECHO) "Installing inflated archive file $@"
++	@$(INSTALL) -d -m 644 $< $(@D)
++
++#####################################################
++# Include archive dependency files
++ifneq (,$(strip $(ARCHIVE_DEPENDS_FILES)))
++-include $(ARCHIVE_DEPENDS_FILES)
++endif
++
+diff --git a/configure/RULES.autosave b/configure/RULES.autosave
+new file mode 100644
+index 000000000..3718e1a8f
+--- /dev/null
++++ b/configure/RULES.autosave
+@@ -0,0 +1,71 @@
++####################################################
++# RULES for building and installing autosave files
++
++# Display how this makefile was called
++#$(info RULES.autosave: '$(MAKECMDGOALS)')
++
++####################################################
++# Where to find and install files for autosave
++vpath %.req           $(USR_VPATH) $(GENERIC_SRC_DIRS) $(dir $(REQ))
++vpath %.sub-req       $(USR_VPATH) $(GENERIC_SRC_DIRS) $(dir $(REQ)) $(COMMON_DIR)
++vpath %.tpl-req       $(USR_VPATH) $(GENERIC_SRC_DIRS) $(dir $(REQ)) $(COMMON_DIR)
++
++# Install autosave files here
++INSTALL_AUTOSAVE = $(INSTALL_LOCATION)/autosave
++
++####################################################
++# Autosave Flags (-I path)
++define  AUTOSAVE_DIRS_template
++  RELEASE_AUTOSAVE_DIRS += $$(wildcard $$(strip $$($(1)))/autosave)
++endef
++$(foreach top, $(RELEASE_TOPS), $(eval $(call AUTOSAVE_DIRS_template,$(top)) ))
++AUTOSAVE_SEARCH_DIRS = . .. $(COMMON_DIR) $(SRC_DIRS) $(INSTALL_AUTOSAVE) $(TOP)/autosave $(RELEASE_AUTOSAVE_DIRS)
++AUTOSAVE_INCLUDES  = $(addprefix -I, $(AUTOSAVE_SEARCH_DIRS))
++AUTOSAVEFLAGS  = $($*_AUTOSAVEFLAGS) $(USR_AUTOSAVEFLAGS) $(AUTOSAVE_INCLUDES)
++
++####################################################
++# Generate COMMON_REQS list
++COMMON_REQS  += $(filter $(COMMON_DIR)/%, \
++	$(foreach file, $(REQ), \
++		$(firstword $(SOURCE_REQ) $(COMMON_DIR)/$(file) ) ) )
++SOURCE_REQ = $(wildcard $(file) $(SOURCE_REQ_bbb) )
++SOURCE_REQ_bbb = $(foreach dir, $(GENERIC_SRC_DIRS), $(SOURCE_REQ_aaa)  )
++SOURCE_REQ_aaa = $(addsuffix /$(file), $(dir) )
++INSTALL_REQS += $(addprefix $(INSTALL_AUTOSAVE)/, $(notdir $(REQ)))
++
++####################################################
++# Generate REQ_DEPENDS_FILES list
++REQ_DEPENDS_FILES += $(addsuffix $(DEP), $(patsubst $(COMMON_DIR)/%,%,$(COMMON_REQS)))
++
++####################################################
++# Build targets
++
++install:	$(INSTALL_REQS)
++
++build:		$(COMMON_REQS)
++
++####################################################
++# Build and install Rules
++
++$(INSTALL_AUTOSAVE)/%:	%  
++	@$(ECHO) "Installing autosave file $@"
++	@$(INSTALL) -d -m 644 $< $(@D)
++
++$(COMMON_DIR)/%.req %.req: %.sub-req
++	@$(RM) $(notdir $@)$(DEP)
++	$(MKMF) -m $(notdir $@)$(DEP) $(AUTOSAVE_INCLUDES) $@ $< 
++	@$(ECHO) "Inflating autosave request from $<"
++	@$(RM) $@
++	$(MSI3_15) $(AUTOSAVEFLAGS) -S$< > $@
++
++$(INSTALL_AUTOSAVE)/%: $(COMMON_DIR)/%
++	@echo "Installing inflated autosave file $@"
++	@$(INSTALL) -d -m 644 $< $(@D)
++
++
++#####################################################
++# Include autosave dependency files
++ifneq (,$(strip $(REQ_DEPENDS_FILES)))
++-include $(REQ_DEPENDS_FILES)
++endif
++
+diff --git a/configure/RULES_BUILD b/configure/RULES_BUILD
+index 242a61b31..176e56be7 100644
+--- a/configure/RULES_BUILD
++++ b/configure/RULES_BUILD
+@@ -100,6 +100,12 @@ endif
+ include $(CONFIG)/RULES_FILE_TYPE
+ 
+ include $(CONFIG)/RULES.Db
++ 
++# Additional SLAC RULES
++-include $(CONFIG)/RULES.alh
++-include $(CONFIG)/RULES.autosave
++-include $(CONFIG)/RULES.archive
++-include $(CONFIG)/RULES.Restore
+ 
+ #---------------------------------------------------------------
+ # Include defines and rules for prod, library and test* targets
+diff --git a/configure/RULES_TOP b/configure/RULES_TOP
+index 50079b446..1113344ad 100644
+--- a/configure/RULES_TOP
++++ b/configure/RULES_TOP
+@@ -35,12 +35,20 @@ ifndef DISABLE_TOP_RULES
+     endif
+   endif
+ 
+-  UNINSTALL_DIRS += $(INSTALL_DB) $(INSTALL_DBD) $(INSTALL_DOC) $(INSTALL_HTML)
+-  UNINSTALL_DIRS += $(INSTALL_INCLUDE) $(INSTALL_TEMPLATES) $(DIRECTORY_TARGETS)
+-  ifneq ($(INSTALL_LOCATION),$(TOP))
+-    UNINSTALL_DIRS += $(INSTALL_CONFIG)
+-  endif
+-  uninstallDirs:
++UNINSTALL_DIRS += $(INSTALL_ARCHIVE)
++UNINSTALL_DIRS += $(INSTALL_AUTOSAVE)
++UNINSTALL_DIRS += $(INSTALL_CFG)
++UNINSTALL_DIRS += $(INSTALL_DB)
++UNINSTALL_DIRS += $(INSTALL_DBD)
++UNINSTALL_DIRS += $(INSTALL_DOC)
++UNINSTALL_DIRS += $(INSTALL_HTML)
++UNINSTALL_DIRS += $(INSTALL_INCLUDE)
++UNINSTALL_DIRS += $(INSTALL_TEMPLATES)
++UNINSTALL_DIRS += $(DIRECTORY_TARGETS)
++ifneq ($(INSTALL_LOCATION),$(TOP))
++  UNINSTALL_DIRS += $(INSTALL_CONFIG)
++endif
++uninstallDirs: | clean
+ 	$(RMDIR) $(UNINSTALL_DIRS)
+ 
+   # Remove the bin and lib directories if they have no sub-directories
