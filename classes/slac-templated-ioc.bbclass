@@ -8,3 +8,14 @@
 inherit epics-ioc-systemd 
 
 EPICS_DEPENDS += "template-macros"
+
+do_install:append() {
+    # Copy child IOC directories
+    # Loop shamelessly stolen from epics-component.bbclass and makes it easier
+    # to add more directories later if required.
+    for d in children; do
+        if [ -d $d ]; then
+            cp -rfv $d "${D}/opt/epics/${MODNAME}/$d"
+        fi
+    done
+}
