@@ -21,7 +21,7 @@ do_install:append() {
     done
 
     # Sanitize child IOC files
-    for i in IOC_APPL_TOP envPaths st.cmd edm*.cmd pydm*.cmd launchgui*.cmd syncts*.cmd; do
+    for i in IOC_APPL_TOP envPaths st.cmd edm*.cmd pydm*.cmd launchgui*.cmd syncts*.cmd *.service start-*.cmd; do
         find "${D}/opt/epics/${MODNAME}" -type f -name $i -exec sed -i "s,${S},/opt/epics/${MODNAME},g" {} \;
         find "${D}/opt/epics/${MODNAME}" -type f -name $i -exec sed -i "s,${RECIPE_SYSROOT},,g" {} \;
     done
