@@ -1,0 +1,50 @@
+From 3276dc0a00372753aedc12d8eaea6a28632e9a2d Mon Sep 17 00:00:00 2001
+From: Tyler Johnson <tylerjohnson3208@gmail.com>
+Date: Tue, 17 Feb 2026 13:28:46 -0800
+Subject: [PATCH] Add rules for systemd service and startup script
+
+---
+ RULES_EXPAND | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/RULES_EXPAND b/RULES_EXPAND
+index e970ec2..4547e9c 100644
+--- a/RULES_EXPAND
++++ b/RULES_EXPAND
+@@ -21,6 +21,8 @@ IOC_DEP_PATTERN  += $(BUILD_TOP)/iocBoot/__IOC__/edm-__IOC__.cmd
+ IOC_DEP_PATTERN  += $(BUILD_TOP)/iocBoot/__IOC__/pydm-__IOC__.cmd
+ IOC_DEP_PATTERN  += $(BUILD_TOP)/iocBoot/__IOC__/launchgui-__IOC__.cmd
+ IOC_DEP_PATTERN  += $(BUILD_TOP)/iocBoot/__IOC__/syncts-__IOC__.cmd
++IOC_DEP_PATTERN  += $(BUILD_TOP)/iocBoot/__IOC__/start-__IOC__.cmd
++IOC_DEP_PATTERN  += $(BUILD_TOP)/iocBoot/__IOC__/__IOC__.service
+ 
+ 
+ DIR_LIST += $(BUILD_TOP)
+@@ -104,6 +106,18 @@ $(BUILD_TOP)/iocBoot/$(1)/syncts-$(1).cmd: $(1).cfg
+ 	@if [ -f $(IOC_APPL_TOP)/iocBoot/templates/syncts-ioc.cmd ]; then $(EXPAND) -c $(1).cfg $(IOC_APPL_TOP)/iocBoot/templates/syncts-ioc.cmd $$@ IOCNAME=$(1) TOP=$(BUILD_TOP_ABS) IOCTOP=$(IOC_APPL_TOP); else echo "#!/bin/sh" > $$@; echo "echo No $(IOC_APPL_TOP)/iocBoot/templates/syncts-ioc.cmd found!" >> $$@; fi
+ 	@-chmod ug+w,a+x $$@
+ 
++# Expand $(BUILD_TOP)/iocBoot/$(1)/start-$(1).cmd
++$(BUILD_TOP)/iocBoot/$(1)/start-$(1).cmd: $(1).cfg
++	@echo Expanding $$@
++	@if [ -f $(IOC_APPL_TOP)/iocBoot/templates/start-ioc.cmd ]; then $(EXPAND) -c $(1).cfg $(IOC_APPL_TOP)/iocBoot/templates/start-ioc.cmd $$@ IOCNAME=$(1) TOP=$(BUILD_TOP_ABS) IOCTOP=$(IOC_APPL_TOP); else echo "#!/bin/sh" > $$@; echo "echo No $(IOC_APPL_TOP)/iocBoot/templates/start-ioc.cmd found!" >> $$@; fi
++	@-chmod ug+w,a+x $$@
++
++# Expand $(BUILD_TOP)/iocBoot/$(1)/$(1).service
++$(BUILD_TOP)/iocBoot/$(1)/$(1).service: $(1).cfg
++	@echo Expanding $$@
++	@if [ -f $(IOC_APPL_TOP)/iocBoot/templates/$(1).service ]; then $(EXPAND) -c $(1).cfg $(IOC_APPL_TOP)/iocBoot/templates/ioc.service $$@ IOCNAME=$(1) TOP=$(BUILD_TOP_ABS) IOCTOP=$(IOC_APPL_TOP); else echo "[Unit]" > $$@; echo "Description=$(1) service" >> $$@; echo "After=network.target" >> $$@; echo "[Service]" >> $$@; echo "Type=simple" >> $$@; echo "ExecStart=start-$(1).cmd" >> $$@; echo "Restart=no" >> $$@; echo "[Install]" >> $$@; echo "WantedBy=multi-user.target" >> $$@; fi
++	@-chmod ug+w,a+x $$@
++
+ # Create $(BUILD_TOP)/iocBoot/$(1)/IOC_APPL_TOP
+ $(BUILD_TOP)/iocBoot/$(1)/IOC_APPL_TOP:
+ 	@echo Setting IOC_APPL_TOP to $(IOC_APPL_TOP) for $(1)
+@@ -173,6 +187,8 @@ $(makefile): ;
+ %/iocBoot/templates/pydm-ioc.cmd: ;
+ %/iocBoot/templates/launchgui-ioc.cmd: ;
+ %/iocBoot/templates/syncts-ioc.cmd: ;
++%/iocBoot/templates/start-ioc.cmd: ;
++%/iocBoot/templates/ioc.service: ;
+ 
+ clean distclean realclean: expandclean
+ 
