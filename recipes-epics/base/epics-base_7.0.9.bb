@@ -18,6 +18,11 @@ SRC_URI = "gitsm://github.com/epics-base/epics-base;protocol=https;branch=7.0;re
 SRC_URI += " \
             file://0001-host-build-option.patch \
             file://0002-additional-install-rules.patch \
+            file://0003-fix-msi-usage-without-tpl-arg.patch \
+            file://0004-split-out-RULES-ioc-targets.patch \
+            file://0005-adding-pva-env-vars-to-envDefs.patch \
+            file://0006-adding-pva-env-vars-to-CONFIG_ENV.patch \
+            file://0007-applied-non-rt-thread-prio-zero.patch \
            "
 
 DEPENDS += " readline"
