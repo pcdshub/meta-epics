@@ -8,7 +8,7 @@
 #TODO: Fix generation of systemd unit files for child IOCs
 inherit epics-module
 
-EPICS_DEPENDS += "template-macros slac-ioc-common-all"
+EPICS_DEPENDS += "template-macros ioc-common-all"
 
 do_install:append() {
     # Copy child IOC directories
