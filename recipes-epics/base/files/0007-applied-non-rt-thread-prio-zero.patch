@@ -1,0 +1,26 @@
+commit 8afdbff53d5c815fe855b37f3ec28ef1508df940
+Author: Bruce Hill <bhill@slac.stanford.edu>
+Date:   Sat Feb 18 02:53:07 2017 -0800
+
+    Applied non-rt-thread-priority-zero.patch
+    
+    FROM slac-changes-vs-7.0.2:
+    If thread is non-RT, sched_priority starts at 0,
+    but minPriority for RT-enabled users is 1, so priority
+    ends up negative and the thread dies.
+    This fix leaves priority at 0 for these cases.
+
+diff --git a/modules/libcom/src/osi/os/posix/osdThread.c b/modules/libcom/src/osi/os/posix/osdThread.c
+index be6d41123..33db6008a 100644
+--- a/modules/libcom/src/osi/os/posix/osdThread.c
++++ b/modules/libcom/src/osi/os/posix/osdThread.c
+@@ -728,7 +728,8 @@ static epicsThreadOSD *createImplicit(void)
+ 
+ #if defined(_POSIX_THREAD_PRIORITY_SCHEDULING) && _POSIX_THREAD_PRIORITY_SCHEDULING > 0
+     if(pthread_getschedparam(tid,&pthreadInfo->schedPolicy,&pthreadInfo->schedParam) == 0) {
+-        if ( pcommonAttr->usePolicy && pthreadInfo->schedPolicy == pcommonAttr->schedPolicy ) {
++        if ( pcommonAttr->usePolicy && pthreadInfo->schedPolicy == pcommonAttr->schedPolicy
++			&& pthreadInfo->schedParam.sched_priority >= pcommonAttr->minPriority) {
+             pthreadInfo->osiPriority =
+                  (pthreadInfo->schedParam.sched_priority - pcommonAttr->minPriority) * 100.0 /
+                     (pcommonAttr->maxPriority - pcommonAttr->minPriority + 1);

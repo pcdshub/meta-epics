@@ -1,0 +1,46 @@
+commit a4b0c866765421572f222d1706dca096f49497ba
+Author: Bruce Hill <bhill@slac.stanford.edu>
+Date:   Tue Oct 30 15:50:01 2018 -0700
+
+    Adding pvAccess env variables to envDefs.h
+
+diff --git a/modules/libcom/src/env/envDefs.h b/modules/libcom/src/env/envDefs.h
+index a768d13c8..0b56e5ed8 100644
+--- a/modules/libcom/src/env/envDefs.h
++++ b/modules/libcom/src/env/envDefs.h
+@@ -44,6 +44,9 @@ typedef struct envParam {
+     char *pdflt;    /**< \brief Default value */
+ } ENV_PARAM;
+ 
++/*
++ * bldEnvData.pl looks for "epicsShareExtern const ENV_PARAM <name>;"
++ */
+ LIBCOM_API extern const ENV_PARAM EPICS_CA_ADDR_LIST;
+ LIBCOM_API extern const ENV_PARAM EPICS_CA_CONN_TMO;
+ LIBCOM_API extern const ENV_PARAM EPICS_CA_AUTO_ADDR_LIST;
+@@ -62,6 +65,25 @@ LIBCOM_API extern const ENV_PARAM EPICS_CAS_SERVER_PORT;
+ LIBCOM_API extern const ENV_PARAM EPICS_CA_BEACON_PERIOD; /**< \brief deprecated */
+ LIBCOM_API extern const ENV_PARAM EPICS_CAS_BEACON_PERIOD;
+ LIBCOM_API extern const ENV_PARAM EPICS_CAS_BEACON_PORT;
++
++LIBCOM_API extern const ENV_PARAM EPICS_PVA_ADDR_LIST;
++LIBCOM_API extern const ENV_PARAM EPICS_PVA_AUTO_ADDR_LIST;
++LIBCOM_API extern const ENV_PARAM EPICS_PVA_BEACON_PERIOD;
++LIBCOM_API extern const ENV_PARAM EPICS_PVA_BROADCAST_PORT;
++LIBCOM_API extern const ENV_PARAM EPICS_PVA_CONN_TMO;
++LIBCOM_API extern const ENV_PARAM EPICS_PVA_DEBUG;
++LIBCOM_API extern const ENV_PARAM EPICS_PVA_MAX_ARRAY_BYTES;
++LIBCOM_API extern const ENV_PARAM EPICS_PVA_PROVIDER_NAMES;
++LIBCOM_API extern const ENV_PARAM EPICS_PVA_SERVER_PORT;
++
++LIBCOM_API extern const ENV_PARAM EPICS_PVAS_AUTO_BEACON_ADDR_LIST;
++LIBCOM_API extern const ENV_PARAM EPICS_PVAS_BEACON_ADDR_LIST;
++LIBCOM_API extern const ENV_PARAM EPICS_PVAS_BEACON_PERIOD;
++LIBCOM_API extern const ENV_PARAM EPICS_PVAS_BROADCAST_PORT;
++LIBCOM_API extern const ENV_PARAM EPICS_PVAS_MAX_ARRAY_BYTES;
++LIBCOM_API extern const ENV_PARAM EPICS_PVAS_PROVIDER_NAMES;
++LIBCOM_API extern const ENV_PARAM EPICS_PVAS_SERVER_PORT;
++
+ LIBCOM_API extern const ENV_PARAM EPICS_BUILD_COMPILER_CLASS;
+ LIBCOM_API extern const ENV_PARAM EPICS_BUILD_OS_CLASS;
+ LIBCOM_API extern const ENV_PARAM EPICS_BUILD_TARGET_ARCH;

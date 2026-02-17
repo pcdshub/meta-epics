@@ -1,0 +1,125 @@
+commit d10ffd4d406787a163bb026aa034ccc2aa7b40c0
+Author: Bruce Hill <bhill@slac.stanford.edu>
+Date:   Fri Mar 24 16:29:24 2017 -0700
+
+    Fix msi usage where msi should not be run w/ tpl as arg
+    
+    Also tweak install msgs to make each one unique for easier debugging.
+
+diff --git a/configure/RULES.Db b/configure/RULES.Db
+index ae023cee1..1f85cfcfd 100644
+--- a/configure/RULES.Db
++++ b/configure/RULES.Db
+@@ -19,10 +19,10 @@ TEMPL_SUFFIX ?= .template
+ vpath %.pm $(USR_VPATH) $(SRC_DIRS) $(dir $(DBD))
+ vpath %.pod $(USR_VPATH) $(SRC_DIRS) .. $(dir $(DBD))
+ vpath %.dbd $(USR_VPATH) $(SRC_DIRS) $(dir $(DBD))
+-vpath %.db $(USR_VPATH) $(SRC_DIRS) $(dir $(DB))
+-vpath %.vdb $(USR_VPATH) $(SRC_DIRS) $(dir $(DB))
++vpath %.db $(USR_VPATH) $(SRC_DIRS) $(dir $(DB)) $(COMMON_DIR)
++vpath %.vdb $(USR_VPATH) $(SRC_DIRS) $(dir $(DB)) $(COMMON_DIR)
+ vpath %$(SUBST_SUFFIX) $(USR_VPATH) $(SRC_DIRS) $(COMMON_DIR)
+-vpath %$(TEMPL_SUFFIX) $(USR_VPATH) $(SRC_DIRS) $(COMMON_DIR)
++vpath %$(TEMPL_SUFFIX) $(USR_VPATH) $(SRC_DIRS) $(dir $(DB)) $(COMMON_DIR)
+ vpath bpt%.data $(USR_VPATH) $(SRC_DIRS) $(COMMON_DIR)
+ vpath %.acf $(USR_VPATH) $(SRC_DIRS) $(COMMON_DIR)
+ vpath %.acs $(USR_VPATH) $(SRC_DIRS) $(COMMON_DIR)
+@@ -266,13 +266,14 @@ menu%.h$(DEP): ../menu%.dbd $(DBDTOMENUH_dep)
+ 	@$(DBEXPAND) -D $(DBDFLAGS) -o $(COMMONDEP_TARGET) $($*_DBD) > $@
+ 	@echo "$(COMMONDEP_TARGET): ../Makefile" >> $@
+ 
++# Specifying $(TEMPLATE_FILENAME) in the msi command line can screw up msi dependencies and expansion
+ %.db$(DEP): %$(SUBST_SUFFIX)
+ 	@$(RM) $@
+-	$(MSI3_15) -D $(DBFLAGS) -o $(COMMONDEP_TARGET) -S$< $(TEMPLATE_FILENAME) > $@
++	$(MSI3_15) -D $(DBFLAGS) -o $(COMMONDEP_TARGET) -S$< > $@
+ 
+ %.db$(DEP): ../%$(SUBST_SUFFIX)
+ 	@$(RM) $@
+-	$(MSI3_15) -D $(DBFLAGS) -o $(COMMONDEP_TARGET) -S$< $(TEMPLATE_FILENAME) > $@
++	$(MSI3_15) -D $(DBFLAGS) -o $(COMMONDEP_TARGET) -S$< > $@
+ 
+ %.db$(DEP): %$(TEMPL_SUFFIX)
+ 	@$(RM) $@
+@@ -305,11 +306,11 @@ $(COMMON_DIR)/%$(SUBST_SUFFIX):
+ endif
+ 
+ $(INSTALL_DB)/%$(SUBST_SUFFIX): %$(SUBST_SUFFIX)
+-	$(ECHO) "Installing substitution file $@"
++	$(ECHO) "Installing db substitutions file $@"
+ 	@$(INSTALL) -d -m $(INSTALL_PERMISSIONS) $< $(@D)
+ 
+ $(INSTALL_DB)/%$(SUBST_SUFFIX): ../%$(SUBST_SUFFIX)
+-	$(ECHO) "Installing substitution file $@"
++	$(ECHO) "Installing db ../substitutions file $@"
+ 	@$(INSTALL) -d -m $(INSTALL_PERMISSIONS) $< $(@D)
+ 
+ .PRECIOUS: $(COMMON_DIR)/%$(SUBST_SUFFIX)
+@@ -318,7 +319,7 @@ $(INSTALL_DB)/%$(SUBST_SUFFIX): ../%$(SUBST_SUFFIX)
+ # Template files
+ 
+ $(INSTALL_DB)/%$(TEMPL_SUFFIX): %$(TEMPL_SUFFIX)
+-	$(ECHO) "Installing template file $@"
++	$(ECHO) "Installing db template file $@"
+ 	@$(INSTALL) -d -m $(INSTALL_PERMISSIONS) $< $(@D)
+ 
+ $(INSTALL_DB)/%$(TEMPL_SUFFIX): ../%$(TEMPL_SUFFIX)
+@@ -420,7 +421,7 @@ $(INSTALL_DBD)/%: ../%
+ 
+ define  DBD_INSTALLS_template
+ $$(INSTALL_DBD)/$$(notdir $(1)): $(1)
+-	$(ECHO) "Installing $$@"
++	$(ECHO) "Installing DBD_INSTALLS $$@"
+ 	@$$(INSTALL) -d -m $$(INSTALL_PERMISSIONS) $$^ $$(INSTALL_DBD)
+ endef
+ $(foreach file, $(DBD_INSTALLS), $(eval $(call DBD_INSTALLS_template, $(file))))
+@@ -486,16 +487,27 @@ $(COMMON_DIR)/%.db: $(COMMON_DIR)/%.edf
+ 	@$(REPLACEVAR) < $*.VAR > $@
+ 	@$(RM) $*.VAR
+ 
++# Note:
++# MSI expansion command was
++#	$(MSI3_15) $(DBFLAGS) -S$< $(TEMPLATE_FILENAME) > msi.tmp
++# This is wrong for msi when both foo.template and foo.substitutions
++# are used as in many of the SLAC IOC's.
++# Specifying foo.template in the command line as above
++# overrides the templates specified in the substitutions file.
++# 
++# SLAC changes it to
++#   $(MSI3_15) $(DBFLAGS) -o $(notdir $@) -S$<
++# to allow both foo.template and foo.subsitutions to coexist.
+ $(COMMON_DIR)/%.db: %$(SUBST_SUFFIX)
+-	$(ECHO) "Inflating database from $< $(TEMPLATE_FILENAME)"
++	$(ECHO) "Inflating database from $<"
+ 	@$(RM) $(notdir $@)
+-	$(MSI3_15) $(DBFLAGS) -o $(notdir $@) -S$< $(TEMPLATE_FILENAME)
++	$(MSI3_15) $(DBFLAGS) -o $(notdir $@) -S$<
+ 	@$(MV) $(notdir $@) $@
+ 
+ $(COMMON_DIR)/%.db: ../%$(SUBST_SUFFIX)
+-	$(ECHO) "Inflating database from $< $(TEMPLATE_FILENAME)"
++	$(ECHO) "Inflating database from $<"
+ 	@$(RM) $(notdir $@)
+-	$(MSI3_15) $(DBFLAGS) -o $(notdir $@) -S$< $(TEMPLATE_FILENAME)
++	$(MSI3_15) $(DBFLAGS) -o $(notdir $@) -S$<
+ 	@$(MV) $(notdir $@) $@
+ 
+ $(COMMON_DIR)/%.db: %$(TEMPL_SUFFIX)
+@@ -523,7 +535,7 @@ $(COMMON_DIR)/%.acf: ../%.acs
+ .PRECIOUS: $(COMMON_DIR)/%.acf
+ 
+ $(INSTALL_DB)/%: %
+-	$(ECHO) "Installing $@"
++	$(ECHO) "Installing db file $@"
+ 	@$(INSTALL) -d -m $(INSTALL_PERMISSIONS) $< $(@D)
+ 
+ $(INSTALL_DB)/%: ../%
+@@ -536,7 +548,7 @@ $(INSTALL_DB)/%.db: $(COMMON_DIR)/%.db
+ 
+ define  DB_INSTALLS_template
+ $$(INSTALL_DB)/$$(notdir $(1)): $(1)
+-	$(ECHO) "Installing $$@"
++	$(ECHO) "Installing DB_INSTALLS $$@"
+ 	@$$(INSTALL) -d -m $$(INSTALL_PERMISSIONS) $$^ $$(INSTALL_DB)
+ endef
+ $(foreach file, $(DB_INSTALLS), $(eval $(call DB_INSTALLS_template, $(file))))
