@@ -8,7 +8,9 @@
 #TODO: Fix generation of systemd unit files for child IOCs
 inherit epics-module
 
-EPICS_DEPENDS += "template-macros ioc-common-all procserv"
+EPICS_DEPENDS += "template-macros ioc-common-all"
+
+RDEPENDS += "procserv"
 
 do_install:append() {
     # Copy child IOC directories
