@@ -11,7 +11,7 @@ LICENSE_PATH += "${S}"
 EPICS_DEPENDS += "epics-autosave epics-devgpiogeneric"
 DEPENDS += "${EPICS_DEPENDS}"
 
-SRCREV = "1056bacdf0c7d0c32396863569cf2b5ba6a7aa4e"
-SRC_URI = "git://git@github.com/slactjohnson/ioc-common-gpio.git;protocol=ssh;branch=working;rev=${SRCREV}"
+SRCREV = "a2e708f4cd90004e5c34439c9b47cb1e75058767"
+SRC_URI = "git://git@github.com/pcdshub/ioc-common-gpio.git;protocol=ssh;branch=master;rev=${SRCREV}"
 
 S = "${WORKDIR}/git"
