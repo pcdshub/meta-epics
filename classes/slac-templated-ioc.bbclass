@@ -5,7 +5,6 @@
 #  - Installs a systemd unit to start the IOC on system boot using procServ
 #
 
-#TODO: Fix generation of systemd unit files for child IOCs
 inherit epics-module
 
 EPICS_DEPENDS += "template-macros ioc-common-all"
