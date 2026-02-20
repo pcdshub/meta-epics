@@ -7,6 +7,9 @@ inherit epics-component
 # All EPICS modules depend on epics-base and epics-base-native
 DEPENDS += "epics-base epics-base-native"
 
+# We should always have epics-base on target
+EPICS_DEPENDS += "epics-base"
+
 # Add all EPICS dependencies to the image
 RDEPENDS:${PN} += "${EPICS_DEPENDS}"
 
