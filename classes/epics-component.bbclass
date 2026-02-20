@@ -41,7 +41,7 @@ python do_configure() {
 }
 
 do_compile() {
-    make -j${BB_NUMBER_THREADS} build
+    oe_runmake build
 }
 
 # We can only package files in a single package; this exposes perl tools that
@@ -52,7 +52,7 @@ do_compile:prepend() {
 }
 
 do_install() {
-    make -j${BB_NUMBER_THREADS} install
+    oe_runmake install
 
     # Copy iocBoot and cpuBoot directories
     for d in iocBoot cpuBoot; do
