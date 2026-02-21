@@ -11,13 +11,13 @@ LICENSE_PATH += "${S}"
 EPICS_DEPENDS += "epics-autosave epics-asyn epics-calc epics-streamdevice-i2c epics-drvasyni2c"
 DEPENDS += "${EPICS_DEPENDS}"
 
-SRCREV = "7699dd7003f2da6e08f5af73accad29792702e03"
+SRCREV = "a63bf112d521fedc0ade47176f9a6ac80822ff77"
 SRC_URI = "git://git@github.com/slactjohnson/ioc-common-bme280I2C.git;protocol=ssh;branch=working;rev=${SRCREV}"
 
 S = "${WORKDIR}/git"
 
 
 # Deal with race conditions
-#do_compile[number_threads] = "1"
-#do_install[number_threads] = "1"
+PARALLEL_MAKE = ""
+PARALLEL_MAKEINST = ""
 EXTRA_OEMAKE += "-j 1"
