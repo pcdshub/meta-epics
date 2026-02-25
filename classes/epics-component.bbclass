@@ -86,6 +86,7 @@ ALL_FILES += "/opt/epics/${MODNAME}/iocsh"
 ALL_FILES += "/opt/epics/${MODNAME}/children"
 ALL_FILES += "/opt/epics/${MODNAME}/src/tools"
 ALL_FILES += "/opt/epics/${MODNAME}/lib/perl"
+ALL_FILES += "/opt/epics/${MODNAME}/edl"
 
 
 # Build a package for the build host
