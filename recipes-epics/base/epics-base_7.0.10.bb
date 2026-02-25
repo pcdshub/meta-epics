@@ -12,7 +12,7 @@ BBCLASSEXTEND = "native nativesdk"
 # Force MODNAME to epics-base for both native and target recipe
 MODNAME = "epics-base"
 
-SRCREV = "07572ab02593fa225660fdee670850c9989f5851"
+SRCREV = "bf11a0c31c919ba85ba2e23b72bcf0b5f9f62e77"
 SRC_URI = "gitsm://github.com/epics-base/epics-base;protocol=https;branch=7.0;rev=${SRCREV}"
 
 SRC_URI += " \
