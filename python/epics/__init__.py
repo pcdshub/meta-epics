@@ -125,6 +125,8 @@ def generate_config_site(d, extra: dict = {}):
             # Enable/disable static and shared libs
             fp.write(f'STATIC_BUILD={"YES" if d.getVar("EPICS_ENABLE_STATIC_LIBS") == "1" else "NO"}\n')
             fp.write(f'SHARED_LIBRARIES={"YES" if d.getVar("EPICS_ENABLE_SHARED_LIBS") == "1" else "NO"}\n')
+            # For shared objects, we want to use $ORIGIN for the RPATH, so we don't end up with invalid temporary paths in the shared objects.
+            fp.write('LINKER_USE_RPATH=ORIGIN\n')
             # Enable host build when requested
             if d.getVar('ENABLE_HOST_PACKAGE') == '1':
                 fp.write('HOST_BUILD=YES\n')

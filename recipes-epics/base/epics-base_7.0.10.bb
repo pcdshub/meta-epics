@@ -25,6 +25,9 @@ RDEPENDS:${PN} += " bash perl"
 
 S = "${WORKDIR}/git"
 
+# Some downstream packages, such as pyepics, need shared libs.
+EPICS_ENABLE_SHARED_LIBS = "1"
+
 python do_configure() {
     import os, subprocess, io
 
@@ -48,6 +51,8 @@ python do_configure() {
         fp.write(f'STATIC_BUILD={"YES" if d.getVar("EPICS_ENABLE_STATIC_LIBS") == "1" else "NO"}\n')
         fp.write(f'SHARED_LIBRARIES={"YES" if d.getVar("EPICS_ENABLE_SHARED_LIBS") == "1" else "NO"}\n')
         fp.write(f'CROSS_COMPILER_TARGET_ARCHS={target_arch}\n')
+        # Use $ORIGIN for RPATH so we dont need to set LD_LIBRARY_PATH
+        fp.write('LINKER_USE_RPATH=ORIGIN\n')
 
         # Point at /opt/epics; better to do this here to avoid bad file paths
         #TODO: fp.write(f'INSTALL_LOCATION={install_dir}\n')
@@ -143,6 +148,10 @@ do_install() {
     install_lib="${D}/opt/epics/${MODNAME}/lib/linux-${TARGET_ARCH}"
     install -d ${install_lib}
     cp -RP --preserve=mode,links -v ${S}/lib/linux-${TARGET_ARCH}/* ${install_lib}
+
+    # Add the EPICS libraries to the LD_LIBRARY_PATH. Certain downstream packages need this (i.e. pyepics)
+    install -d "${D}${sysconfdir}/profile.d"
+    echo "export LD_LIBRARY_PATH=/opt/epics/epics-base/lib/linux-${TARGET_ARCH}:\${LD_LIBRARY_PATH}" > "${D}${sysconfdir}/profile.d/epics.sh"
 }
 
 do_install:append:class-native() {
@@ -172,3 +181,4 @@ do_install:append:class-target() {
 
 FILES:${PN}:append:class-target = " /usr/local/bin"
 FILES:${PN}:append:class-target = " /etc/systemd/system"
+FILES:${PN}:append:class-target = " ${sysconfdir}"

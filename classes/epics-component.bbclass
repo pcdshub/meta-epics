@@ -21,7 +21,8 @@ EPICS_ENABLE_SHARED_LIBS ?= "0"
 # - buildpaths is to suppress complaints about the build host (class-native)
 #   package containing references to TMPDIR, which is fine because these are
 #   not installed on the target, only used in compilation of the target package
-INSANE_SKIP:class-target = "file-rdeps staticdev"
+# - dev-so prevents the build erroring out from symlinks like libca.so -> libco.so.1.2.3. you're "supposed" to put these in a dev package.
+INSANE_SKIP:class-target = "file-rdeps staticdev dev-so"
 INSANE_SKIP:class-native = "file-rdeps staticdev arch buildpaths"
 
 # Sucks, but we have to compile the package for x86_64 hosts too in case some tools run during the build process

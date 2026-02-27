@@ -1,0 +1,12 @@
+diff --git a/pyproject.toml b/pyproject.toml
+index 5cce337..27e81e0 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -25,7 +25,6 @@ requires-python = ">=3.10"
+ description = "Epics Channel Access for Python"
+ readme = "README.rst"
+ authors = [{name="Matthew Newville", email="newville@cars.uchicago.edu"}]
+-license-files = ["LICENSE"]
+ classifiers = [
+     "Development Status :: 5 - Production/Stable",
+     "Intended Audience :: Science/Research",
