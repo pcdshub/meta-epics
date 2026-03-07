@@ -14,8 +14,8 @@ EPICS_DEPENDS += "epics-base"
 RDEPENDS:${PN} += "${EPICS_DEPENDS}"
 
 do_install:append() {
-    # Sanitize module RELEASE.local
-    sed -i "s,${RECIPE_SYSROOT},,g" "${D}/opt/epics/${MODNAME}/configure/RELEASE.local"
+    # Sanitize all installed .local files
+    find "${D}/opt/epics/${MODNAME}" -type f -iname '*.local' -exec sed -i "s,${RECIPE_SYSROOT},,g" {} \;
 
     # Sanitize envPaths
     find "${D}/opt/epics/${MODNAME}" -type f -name 'envPaths' -exec sed -i "s,${RECIPE_SYSROOT},,g" {} \;

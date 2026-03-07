@@ -1,4 +1,4 @@
-# Recipe for areaDetector
+# Recipe for areaDetector master branch
 
 inherit epics-module
 
@@ -13,7 +13,7 @@ SRCREV = "ed51ecf4f5d781f8edb525cd4219902c82b0be94"
 SRC_URI = "gitsm://github.com/areaDetector/areaDetector;protocol=https;branch=master;rev=${SRCREV}"
 
 EPICS_DEPENDS += "epics-autosave epics-calc epics-asyn epics-pvxs epics-sscan"
-DEPENDS += "${EPICS_DEPENDS} python3-native zlib tiff glib-2.0 aravis"
+DEPENDS += "${EPICS_DEPENDS} python3-native zlib tiff ffmpeg"
 
 configure_libs() {
     # Note on RELEASE_PRODS/RELEASE_LIBS:
@@ -22,16 +22,21 @@ configure_libs() {
     # - RELEASE_LIBS is included by downstream modules themselves. TOP=..
 
     echo "AREA_DETECTOR=${S}" >> "${S}/configure/RELEASE.local"
-    
+
     # Point at ADSupport/ADCore
     echo 'ADSUPPORT=$(AREA_DETECTOR)/ADSupport' >> "${S}/configure/RELEASE.local"
     echo 'ADCORE=$(AREA_DETECTOR)/ADCore' >> "${S}/configure/RELEASE.local"
-    
-    # Bit strange, but RELEASE_PRODS.local is a required include that comes before RELEASE.local
+
+    # Create RELEASE_PRODS and RELEASE_LIBS for submoduled packages
     cp "${S}/configure/RELEASE.local" "${S}/configure/RELEASE_PRODS.local"
-    
-    # RELEASE_LIBS.local also seems to be required in some way, with similar content
     cp "${S}/configure/RELEASE.local" "${S}/configure/RELEASE_LIBS.local"
+
+    # Enable commonly used/utility modules
+    for pkg in ADSimDetector ADCSimDetector ffmpegServer NDDriverStdArrays pvaDriver \
+        ADGenICam
+    do
+        echo "$(echo ${pkg} | tr '[:lower:]' '[:upper:]')=\$(AREA_DETECTOR)/${pkg}" >> "${S}/configure/RELEASE.local"
+    done
 
     # Use these Yocto-provided packages:
     for pkg in ZLIB TIFF; do
@@ -50,6 +55,9 @@ configure_libs() {
 
     echo "WITH_PVXS = YES" >> "${S}/configure/CONFIG_SITE.local"
     echo "WITH_PVA = YES" >> "${S}/configure/CONFIG_SITE.local"
+    
+    # HACK: ffmpegServer disables all cross arches, so we can't rely on the inherited value from EPICS base
+    echo "CROSS_COMPILER_TARGET_ARCHS=linux-${TARGET_ARCH}" >> "${S}/configure/CONFIG_SITE.local"
 
     # Aravis specific config
     echo "ARAVIS_INCLUDE = ${RECIPE_SYSROOT}/usr/include" >> "${S}/configure/CONFIG_SITE.local"
