@@ -58,11 +58,6 @@ configure_libs() {
     
     # HACK: ffmpegServer disables all cross arches, so we can't rely on the inherited value from EPICS base
     echo "CROSS_COMPILER_TARGET_ARCHS=linux-${TARGET_ARCH}" >> "${S}/configure/CONFIG_SITE.local"
-
-    # Aravis specific config
-    echo "ARAVIS_INCLUDE = ${RECIPE_SYSROOT}/usr/include" >> "${S}/configure/CONFIG_SITE.local"
-    echo "GLIB_INCLUDE = ${RECIPE_SYSROOT}/usr/include/glib-2.0 ${RECIPE_SYSROOT}/usr/lib/glib-2.0/include" >> "${S}/configure/CONFIG_SITE.local"
-    echo "glib-2.0_DIR =  ${RECIPE_SYSROOT}/usr/lib" >> "${S}/configure/CONFIG_SITE.local"
 }
 
 do_configure[postfuncs] += "configure_libs"
