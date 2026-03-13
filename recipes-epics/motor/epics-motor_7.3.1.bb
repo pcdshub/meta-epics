@@ -22,5 +22,24 @@ EPICS_DEPENDS += "epics-asyn"
 
 DEPENDS += "${EPICS_DEPENDS}"
 
+# I don't think this will be needed for embedded targets
+unset_ipac () {
+    echo "IPAC=" >> "${S}/configure/RELEASE.local"
+}
+
+# Need to tell submodules where our tools are. May be a better way to do this,
+# but I couldn't figure it out.
+set_module_host_bin () {
+    echo "EPICS_BASE_HOST_BIN = ${RECIPE_SYSROOT_NATIVE}/opt/epics/epics-base/bin/${BUILD_OS}-${BUILD_ARCH}" >> "${S}/modules/CONFIG_SITE.local"
+}
+
+# We can't check release with yocto builds
+unset_module_check_release () {
+    echo "CHECK_RELEASE = NO" >> "${S}/modules/CONFIG_SITE.local"
+}
+
 do_configure[postfuncs] += "unset_busy"
 do_configure[postfuncs] += "unset_seq"
+do_configure[postfuncs] += "unset_ipac"
+do_configure[postfuncs] += "set_module_host_bin"
+do_configure[postfuncs] += "unset_module_check_release"
