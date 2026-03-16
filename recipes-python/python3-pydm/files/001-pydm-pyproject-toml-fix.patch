@@ -1,0 +1,15 @@
+diff --git a/pyproject.toml b/pyproject.toml
+index 43f9795b..24b09587 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -40,8 +40,8 @@ file = "requirements.txt"
+ [tool.setuptools.dynamic.optional-dependencies.test]
+ file = "dev-requirements.txt"
+ 
+-[tool.setuptools.dynamic.optional-dependencies.test-no-optional]
+-file = "windows-dev-requirements.txt"
++#[tool.setuptools.dynamic.optional-dependencies.test-no-optional]
++#file = "windows-dev-requirements.txt"
+ 
+ [tool.setuptools.dynamic.optional-dependencies.doc]
+ file = "docs-requirements.txt"
