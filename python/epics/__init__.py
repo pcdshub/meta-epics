@@ -131,6 +131,8 @@ def generate_config_site(d, extra: dict = {}):
             # Enable host build when requested
             if d.getVar('ENABLE_HOST_PACKAGE') == '1':
                 fp.write('HOST_BUILD=YES\n')
+            # Force the list of target arches. Some packages may override this in their CONFIG_SITE
+            fp.write(f'CROSS_COMPILER_TARGET_ARCHS={target_arch(d)}\n')
             # append extras
             for e, v in extra.items():
                 fp.write(f'{e}={v}\n')
