@@ -28,70 +28,71 @@ S = "${WORKDIR}/git"
 # Some downstream packages, such as pyepics, need shared libs.
 EPICS_ENABLE_SHARED_LIBS = "1"
 
-python do_configure() {
-    import os, subprocess, io
+do_configure() {
+    install -d "${D}/opt/epics/${PN}"
 
-    dest = d.getVar("D")
-    PN = d.getVar("PN")
+    #############################################################
+    # configure/CONFIG_SITE.local
+    #############################################################
 
-    target_arch = epics.target_arch(d)
-    
-    print(f'TARGET_ARCH={target_arch}')
-    print(f'HOST_ARCH={epics.host_arch(d)}')
+    F="${S}/configure/CONFIG_SITE.local"
 
-    install_dir = f"{dest}/opt/epics/{PN}"
-    try:
-        os.mkdir(install_dir)
-    except:
-        pass
+    # Enable/disable static and shared libs
+    if [ "${EPICS_ENABLE_STATIC_LIBS}" = "1" ]; then
+        echo "STATIC_BUILD=YES" > "${F}"
+    else
+        echo "STATIC_BUILD=NO" > "${F}"
+    fi
 
-    # Write out a CONFIG_SITE.local with our changes
-    with open('configure/CONFIG_SITE.local', 'w') as fp:
-        # Enable/disable static and shared libs
-        fp.write(f'STATIC_BUILD={"YES" if d.getVar("EPICS_ENABLE_STATIC_LIBS") == "1" else "NO"}\n')
-        fp.write(f'SHARED_LIBRARIES={"YES" if d.getVar("EPICS_ENABLE_SHARED_LIBS") == "1" else "NO"}\n')
-        fp.write(f'CROSS_COMPILER_TARGET_ARCHS={target_arch}\n')
-        # Use $ORIGIN for RPATH so we dont need to set LD_LIBRARY_PATH
-        fp.write('LINKER_USE_RPATH=ORIGIN\n')
+    if [ "${EPICS_ENABLE_SHARED_LIBS}" = "1" ]; then
+        echo "SHARED_LIBRARIES=YES" >> "${F}"
+    else
+        echo "SHARED_LIBRARIES=NO" >> "${F}"
+    fi
 
-        # Point at /opt/epics; better to do this here to avoid bad file paths
-        #TODO: fp.write(f'INSTALL_LOCATION={install_dir}\n')
-        fp.write(f'FINAL_LOCATION=/opt/epics/{PN}\n')
+    echo "CROSS_COMPILER_TARGET_ARCHS=linux-${TARGET_ARCH}" >> "${F}"
+    # Use $ORIGIN for RPATH so we dont need to set LD_LIBRARY_PATH
+    echo 'LINKER_USE_RPATH=ORIGIN' >> "${F}"
 
-        # Build only for target architecture(s), not for the build host
-        fp.write('HOST_BUILD=NO\n')
+    # Point at /opt/epics; better to do this here to avoid bad file paths
+    #TODO: fp.write(f'INSTALL_LOCATION={install_dir}\n')
+    echo "FINAL_LOCATION=/opt/epics/${PN}" >> "${F}"
 
-    host_arch = epics.host_arch(d)
+    # Build only for target architecture(s), not for the build host
+    echo "HOST_BUILD=NO" >> "${F}"
 
-    # Grab compile tools
-    CC = d.getVar("CC")
-    CXX = d.getVar("CXX")
-    LD = d.getVar("LD")
-    AR = d.getVar("AR")
-    RANLIB = d.getVar("RANLIB")
+    #############################################################
+    # configure/CONFIG_SITE.Common.linux-${BUILD_ARCH}
+    #############################################################
 
-    # Append some barebones stuff to the host configuration
-    with open(f'configure/os/CONFIG_SITE.Common.{host_arch}', 'a') as fp:
-        fp.seek(0, io.SEEK_END)
-        # Force C99; GCC 15 switches the default C standard to C23, which breaks a *lot* of things.
-        fp.write('OP_SYS_CFLAGS += -std=c99\n')
+    # Force C99; GCC 15 switches the default C standard to C23, which breaks a *lot* of things.
+    echo 'OP_SYS_CFLAGS += -std=c99' >> "${S}/configure/CONFIG_SITE.Common.linux-${BUILD_ARCH}"
 
-    if not os.path.exists(f'configure/os/CONFIG_SITE.{host_arch}.{target_arch}'):
-        raise Exception(f'Target architecture {target_arch} is unsupported by EPICS base. Cannot continue')
+    if [ ! -f "${S}/configure/os/CONFIG_SITE.linux-${BUILD_ARCH}.linux-${TARGET_ARCH}" ]; then
+        echo "Target architecture linux-${TARGET_ARCH} is unsupported by EPICS base. Cannot continue"
+        exit 1
+    fi
+
+    #############################################################
+    # configure/CONFIG_SITE.linux-${BUILD_ARCH}.linux-${BUILD_ARCH}
+    #############################################################
 
     # This file can be safely overwritten
-    with open(f'configure/os/CONFIG_SITE.{host_arch}.{target_arch}', 'w') as fp:
-        # Set compile tools
-        fp.write(f'CC={CC}\n')
-        fp.write(f'CXX={CXX}\n')
-        fp.write(f'CCC={CXX}\n')
-        fp.write(f'LD={LD} -r\n')      # -r is ordinarily appended by EPICS base, but not here because we overrode LD directly
-        fp.write(f'AR={AR} -rc\n')     # ...same situation with -rc
-        fp.write(f'RANLIB={RANLIB}\n')
+    F="${S}/configure/os/CONFIG_SITE.linux-${BUILD_ARCH}.linux-${TARGET_ARCH}"
 
-        # Ensure we use GNU hash style, because that's what Yocto expects...
-        # Can't pull in the entire BUILD_LDFLAGS var here, that needs to be done on the command line
-        fp.write(f'USR_LDFLAGS+=-Wl,--hash-style=gnu\n')
+    # Set compile tools
+    echo "CC=${CC}" > "${F}"
+    echo "CXX=${CXX}" >> "${F}"
+    echo "CCC=${CXX}" >> "${F}"
+    # -r is ordinarily appended by EPICS base, but not here because we overrode LD directly
+    echo "LD=${LD} -r" >> "${F}"
+    # ...same situation with -rc
+    echo "AR=${AR} -rc" >> "${F}"
+    echo "RANLIB=${RANLIB}" >> "${F}"
+
+    # Ensure we use GNU hash style, because that's what Yocto expects...
+    # Can't pull in the entire BUILD_LDFLAGS var here, that needs to be done on the command line
+    echo "USR_LDFLAGS+=-Wl,--hash-style=gnu" >> "${F}"
 }
 
 do_compile() {
