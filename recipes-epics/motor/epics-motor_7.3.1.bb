@@ -30,6 +30,10 @@ set_module_host_bin () {
     echo "EPICS_BASE_HOST_BIN = ${RECIPE_SYSROOT_NATIVE}/opt/epics/epics-base/bin/${BUILD_OS}-${BUILD_ARCH}" >> "${S}/modules/CONFIG_SITE.local"
 }
 
+set_linker_rpath () {
+    echo "LINKER_USE_RPATH=ORIGIN" >> "${S}/modules/CONFIG_SITE.local"
+}
+
 # We can't check release with yocto builds
 unset_module_check_release () {
     echo "CHECK_RELEASE = NO" >> "${S}/modules/CONFIG_SITE.local"
@@ -38,5 +42,6 @@ unset_module_check_release () {
 do_configure[postfuncs] += "unset_busy"
 do_configure[postfuncs] += "unset_seq"
 do_configure[postfuncs] += "unset_ipac"
-do_configure[postfuncs] += "set_module_host_bin"
-do_configure[postfuncs] += "unset_module_check_release"
+#do_configure[postfuncs] += "set_module_host_bin"
+#do_configure[postfuncs] += "unset_module_check_release"
+#do_configure[postfuncs] += "set_linker_rpath"
