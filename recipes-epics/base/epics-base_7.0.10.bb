@@ -93,6 +93,13 @@ do_configure() {
     # Ensure we use GNU hash style, because that's what Yocto expects...
     # Can't pull in the entire BUILD_LDFLAGS var here, that needs to be done on the command line
     echo "USR_LDFLAGS+=-Wl,--hash-style=gnu" >> "${F}"
+
+    #############################################################
+    # configure/CONFIG_SITE_ENV
+    #############################################################
+
+    # Tell EPICS base to call abort() on assertion failure rather than suspend the executing thread.
+    sed -iE 's/EPICS_ABORT_ON_ASSERT=.*/EPICS_ABORT_ON_ASSERT=YES/g' "${S}/configure/CONFIG_SITE_ENV"
 }
 
 do_compile() {
