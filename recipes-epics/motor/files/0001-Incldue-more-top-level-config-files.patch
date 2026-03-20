@@ -1,0 +1,24 @@
+From 00ca6a98c3252a94fdb80a102ef66e573626121e Mon Sep 17 00:00:00 2001
+From: Tyler Johnson <tylerjohnson3208@gmail.com>
+Date: Fri, 20 Mar 2026 08:11:18 -0700
+Subject: [PATCH] Incldue more top level config files
+
+---
+ modules/CONFIG_SITE.local | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/modules/CONFIG_SITE.local b/modules/CONFIG_SITE.local
+index 076004d8..a36417ea 100644
+--- a/modules/CONFIG_SITE.local
++++ b/modules/CONFIG_SITE.local
+@@ -7,7 +7,8 @@ INSTALL_LOCATION = $(MOTOR)
+ # Stop submodules from installing their configuration files:
+ CONFIG_INSTALLS =
+ 
++-include $(TOP)/../../configure/CONFIG_SITE.$(EPICS_HOST_ARCH).Common
+ ifdef T_A
+-include $(TOP)/../../configure/CONFIG_SITE.Common.$(T_A)
++ -include $(TOP)/../../configure/CONFIG_SITE.Common.$(T_A)
++ -include $(TOP)/../../configure/CONFIG_SITE.$(EPICS_HOST_ARCH).$(T_A)
+ endif
+-

@@ -13,6 +13,7 @@ LICENSE = "CLOSED"
 SRCREV = "88c627ae02a2c26bbec391d15fd6fa3239e47477"
 SRC_URI = "gitsm://github.com/epics-modules/motor;protocol=https;branch=master;rev=${SRCREV} \
            file://0001-Include-top-level-T_A-config.patch \
+           file://0001-Incldue-more-top-level-config-files.patch \
            "
 
 S = "${WORKDIR}/git"
@@ -24,24 +25,6 @@ EPICS_DEPENDS += "epics-asyn"
 
 DEPENDS += "${EPICS_DEPENDS}"
 
-# Need to tell submodules where our tools are. May be a better way to do this,
-# but I couldn't figure it out.
-set_module_host_bin () {
-    echo "EPICS_BASE_HOST_BIN = ${RECIPE_SYSROOT_NATIVE}/opt/epics/epics-base/bin/${BUILD_OS}-${BUILD_ARCH}" >> "${S}/modules/CONFIG_SITE.local"
-}
-
-set_linker_rpath () {
-    echo "LINKER_USE_RPATH=ORIGIN" >> "${S}/modules/CONFIG_SITE.local"
-}
-
-# We can't check release with yocto builds
-unset_module_check_release () {
-    echo "CHECK_RELEASE = NO" >> "${S}/modules/CONFIG_SITE.local"
-}
-
 do_configure[postfuncs] += "unset_busy"
 do_configure[postfuncs] += "unset_seq"
 do_configure[postfuncs] += "unset_ipac"
-#do_configure[postfuncs] += "set_module_host_bin"
-#do_configure[postfuncs] += "unset_module_check_release"
-#do_configure[postfuncs] += "set_linker_rpath"
