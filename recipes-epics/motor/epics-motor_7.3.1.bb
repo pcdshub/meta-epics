@@ -19,6 +19,12 @@ S = "${WORKDIR}/git"
 
 MODNAME = "epics-motor"
 
+#FIXME: Seeing buildpaths warnings on sub-module static libraries and debug
+# shared libraries. Doesn't appear to influence actual performance, but should
+# be fixed at some point.
+INSANE_SKIP:${PN} += "buildpaths"
+INSANE_SKIP:${PN}-dbg += "buildpaths"
+
 # Skipping busy, sequencer, IPAC, Lua, MX, and modbus for now
 EPICS_DEPENDS += "epics-asyn"
 
