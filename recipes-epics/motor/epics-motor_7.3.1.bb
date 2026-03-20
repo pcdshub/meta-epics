@@ -12,8 +12,7 @@ LICENSE = "CLOSED"
 
 SRCREV = "88c627ae02a2c26bbec391d15fd6fa3239e47477"
 SRC_URI = "gitsm://github.com/epics-modules/motor;protocol=https;branch=master;rev=${SRCREV} \
-           file://0001-Include-top-level-T_A-config.patch \
-           file://0001-Incldue-more-top-level-config-files.patch \
+           file://0001-Add-top-level-arch-configs-to-module-builds.patch \
            "
 
 S = "${WORKDIR}/git"
