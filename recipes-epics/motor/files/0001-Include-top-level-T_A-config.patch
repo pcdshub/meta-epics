@@ -1,0 +1,21 @@
+From 43947501d27a23649029ec6c39a6232fa53c8936 Mon Sep 17 00:00:00 2001
+From: Tyler Johnson <tylerjohnson3208@gmail.com>
+Date: Fri, 20 Mar 2026 07:34:00 -0700
+Subject: [PATCH] Include top level T_A config
+
+---
+ modules/CONFIG_SITE.local | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/modules/CONFIG_SITE.local b/modules/CONFIG_SITE.local
+index cdcda02e..076004d8 100644
+--- a/modules/CONFIG_SITE.local
++++ b/modules/CONFIG_SITE.local
+@@ -7,3 +7,7 @@ INSTALL_LOCATION = $(MOTOR)
+ # Stop submodules from installing their configuration files:
+ CONFIG_INSTALLS =
+ 
++ifdef T_A
++include $(TOP)/../../configure/CONFIG_SITE.Common.$(T_A)
++endif
++
