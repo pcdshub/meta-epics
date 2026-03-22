@@ -44,11 +44,11 @@ def get_depends(d) -> dict:
     """
     r = {}
     # Some EPICS dependencies have names that do not conform to the standard;
-    # for example the seq module is often listed as SNCSEQ in RELEASE. Here we
-    # keep a dictionary of non-standard dependencies and their corrected
+    # for example the sequencer module is often listed as SNCSEQ in RELEASE. 
+    # Here we keep a dictionary of non-standard dependencies and their corrected
     # RELEASE variable.
     alt_release = {
-        'epics-seq': 'epics-sncseq',
+        'epics-sequencer': 'epics-sncseq',
         'epics-streamdevice-i2c': 'epics-streamdevice'
     }
 

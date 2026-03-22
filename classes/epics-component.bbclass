@@ -64,7 +64,6 @@ do_install() {
 
     # Get streamDevice protocol files from typical directories
     if [ -d protocol ]; then
-        install -d "${D}/opt/epics/${MODNAME}/protocol"
         cp -rfv protocol "${D}/opt/epics/${MODNAME}/protocol"
     fi
 

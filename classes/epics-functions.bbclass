@@ -18,3 +18,17 @@ set_tirpc () {
     echo "TIRPC=YES" >> "${S}/configure/CONFIG_SITE.local"
 }
 
+unset_busy () {
+    echo "BUSY=" >> "${S}/configure/RELEASE.local"
+}
+
+unset_seq () {
+    echo "SNCSEQ=" >> "${S}/configure/RELEASE.local"
+}
+
+# For motor record
+# I don't think this will be needed for embedded targets
+unset_ipac () {
+    echo "IPAC=" >> "${S}/configure/RELEASE.local"
+}
+
