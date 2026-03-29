@@ -108,10 +108,6 @@ do_compile() {
     # will result in them being passed down to other EPICS packages.
     # Build base with the build host and target flags
     make -j${BB_NUMBER_THREADS} \
-        CC="${BUILD_CC}" \
-        CXX="${BUILD_CXX}" \
-        LD="${BUILD_LD}" \
-        AR="${BUILD_AR}" \
         USR_CFLAGS="${BUILD_CFLAGS}" \
         USR_CXXFLAGS="${BUILD_CXXFLAGS}" \
         USR_LDFLAGS="${BUILD_LDFLAGS}" \
@@ -165,6 +161,9 @@ do_install() {
     # Add the EPICS libraries to the LD_LIBRARY_PATH. Certain downstream packages need this (i.e. pyepics)
     install -d "${D}${sysconfdir}/profile.d"
     echo "export LD_LIBRARY_PATH=/opt/epics/epics-base/lib/linux-${TARGET_ARCH}:\${LD_LIBRARY_PATH}" > "${D}${sysconfdir}/profile.d/epics.sh"
+    
+    # Remove all tempoary directories that came over as we copied
+    find "${install_dir}" -type d -name "O.*" -exec rm -rf {} +
 }
 
 do_install:append:class-native() {
