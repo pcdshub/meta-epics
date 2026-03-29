@@ -71,6 +71,11 @@ do_install() {
         install -d "${D}/opt/epics/${MODNAME}/app"
         cp -rfv app/srcProtocol "${D}/opt/epics/${MODNAME}/app/srcProtocol"
     fi
+
+    # Sanitize TOOLCHAIN files. These contain absolute paths in comments
+    for d in $(find ${D}/opt/epics/${MODNAME} -name "TOOLCHAIN*"); do
+        sed -i "/^#/d" "${d}"
+    done
 }
 
 # See comment above; need to do this before tasks with compilation

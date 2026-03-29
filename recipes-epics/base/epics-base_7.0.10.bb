@@ -80,12 +80,12 @@ do_configure() {
     # This file can be safely overwritten
     F="${S}/configure/os/CONFIG_SITE.linux-${BUILD_ARCH}.linux-${TARGET_ARCH}"
 
-    # Set compile tools
-    echo "CC=${CC}" > "${F}"
-    echo "CXX=${CXX}" >> "${F}"
-    echo "CCC=${CXX}" >> "${F}"
+    # Set compile tools (with a bit of an ugly workaround for flags Yocto injects into $CC/$CXX/etc.)
+    echo "CC=$(echo ${CC} | cut -d ' ' -f1)" > "${F}"
+    echo "CXX=$(echo ${CXX} | cut -d ' ' -f1)" >> "${F}"
+    echo "CCC=$(echo ${CXX} | cut -d ' ' -f1)" >> "${F}"
     # -r is ordinarily appended by EPICS base, but not here because we overrode LD directly
-    echo "LD=${LD} -r" >> "${F}"
+    echo "LD=$(echo ${LD} | cut -d ' ' -f1) -r" >> "${F}"
     # ...same situation with -rc
     echo "AR=${AR} -rc" >> "${F}"
     echo "RANLIB=${RANLIB}" >> "${F}"
@@ -108,6 +108,10 @@ do_compile() {
     # will result in them being passed down to other EPICS packages.
     # Build base with the build host and target flags
     make -j${BB_NUMBER_THREADS} \
+        CC="${BUILD_CC}" \
+        CXX="${BUILD_CXX}" \
+        LD="${BUILD_LD}" \
+        AR="${BUILD_AR}" \
         USR_CFLAGS="${BUILD_CFLAGS}" \
         USR_CXXFLAGS="${BUILD_CXXFLAGS}" \
         USR_LDFLAGS="${BUILD_LDFLAGS}" \
@@ -115,10 +119,11 @@ do_compile() {
 }
 
 do_compile:append:class-target() {
+    # Extract flags from $CC/$CXX/$LD and put them into the USR_ variables
     make -j${BB_NUMBER_THREADS} \
-        USR_CFLAGS="${CFLAGS}" \
-        USR_CXXFLAGS="${CXXFLAGS}" \
-        USR_LDFLAGS="${LDFLAGS}" \
+        USR_CFLAGS="$(echo "${CC}" | cut -d ' ' -f 2-) ${CFLAGS}" \
+        USR_CXXFLAGS="$(echo "${CXX}" | cut -d ' ' -f 2-) ${CXXFLAGS}" \
+        USR_LDFLAGS="$(echo "${LD}" | cut -d ' ' -f 2-) ${LDFLAGS}" \
         install.linux-${TARGET_ARCH}
 }
 
@@ -178,6 +183,11 @@ do_install:append:class-target() {
     for prog in caput caget cainfo camonitor catime caRepeater pvcall pvget pvinfo pvlist pvmonitor pvput
     do
         ln -s /opt/epics/${MODNAME}/bin/linux-${TARGET_ARCH}/$prog "${D}/usr/local/bin/$prog"
+    done
+
+    # Sanitize TOOLCHAIN files. These contain absolute paths in comments
+    for d in $(find ${D}/opt/epics/${MODNAME} -name "TOOLCHAIN*"); do
+        sed -i "/^#/d" "${d}"
     done
 
     # Install the generated caRepeater.service
