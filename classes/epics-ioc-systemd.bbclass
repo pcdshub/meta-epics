@@ -32,14 +32,6 @@ IOC_ST_CMD ?= "st.cmd"
 
 # --- End user provided settings --- #
 
-#update_env_paths() {
-#    F="${D}/opt/epics/${MODNAME}/${IOC_PATH}/envPaths"
-#    for e in ${IOC_ENV}; do
-#        eval "V=\${${e}_ENV}"
-#        echo "epicsEnvSet(\"${e}\", \"${V}\")" >> "${F}"
-#    done
-#}
-
 python update_env_paths() {
     D = d.getVar("D")
     MODNAME = d.getVar("MODNAME")
