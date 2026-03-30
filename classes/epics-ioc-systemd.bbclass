@@ -23,10 +23,36 @@ IOC_APP_NAME ?= ""
 # Path to the IOC, relative to the package root. ex: iocBoot/sioc-my-example
 IOC_PATH ?= ""
 
+# List of additional variable names to append to envPaths for the IOC.
+# These will be expanded with the suffix _ENV. So, IOC_ENV += "PV_PREFIX" will be set to the value of ${PV_PREFIX_ENV} in Yocto.
+IOC_ENV ?= ""
+
 # Name of the IOC's st.cmd (usually just st.cmd)
 IOC_ST_CMD ?= "st.cmd"
 
 # --- End user provided settings --- #
+
+#update_env_paths() {
+#    F="${D}/opt/epics/${MODNAME}/${IOC_PATH}/envPaths"
+#    for e in ${IOC_ENV}; do
+#        eval "V=\${${e}_ENV}"
+#        echo "epicsEnvSet(\"${e}\", \"${V}\")" >> "${F}"
+#    done
+#}
+
+python update_env_paths() {
+    D = d.getVar("D")
+    MODNAME = d.getVar("MODNAME")
+    IOC_PATH = d.getVar("IOC_PATH")
+
+    import os
+    with open(f"{D}/opt/epics/{MODNAME}/{IOC_PATH}/envPaths", "a") as fp:
+        for k in d.getVar("IOC_ENV").split(" "):
+            if len(k) == 0: continue
+            V = d.getVar(f"{k}_ENV")
+            if V is None: V = ""
+            fp.write(f"epicsEnvSet(\"{k}\", \"{V}\")\n")
+}
 
 # Installs a systemd unit to automatically start the IOC
 install_systemd_unit() {
@@ -70,7 +96,7 @@ install_systemd_unit() {
     ln -s "/etc/systemd/system/${PN}.service" "${D}/etc/systemd/system/multi-user.target.wants/${PN}.service"
 }
 
-do_install[postfuncs] += "install_systemd_unit"
+do_install[postfuncs] += "update_env_paths install_systemd_unit"
 
 FILES:${PN} += "/opt/epics/${MODNAME}/ioc-start.sh"
 FILES:${PN} += "/etc/systemd/system/${PN}.service"
