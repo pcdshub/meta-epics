@@ -32,3 +32,17 @@ unset_ipac () {
     echo "IPAC=" >> "${S}/configure/RELEASE.local"
 }
 
+# Update envPaths to include definitions specified by IOC_ENV
+python update_env_paths() {
+    D = d.getVar("D")
+    MODNAME = d.getVar("MODNAME")
+    IOC_PATH = d.getVar("IOC_PATH")
+
+    import os
+    with open(f"{D}/opt/epics/{MODNAME}/{IOC_PATH}/envPaths", "a") as fp:
+        for k in d.getVar("IOC_ENV").split(" "):
+            if len(k) == 0: continue
+            V = d.getVar(f"{k}_ENV")
+            if V is None: V = ""
+            fp.write(f"epicsEnvSet(\"{k}\", \"{V}\")\n")
+}

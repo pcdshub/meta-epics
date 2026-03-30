@@ -23,6 +23,10 @@ IOC_APP_NAME ?= ""
 # Path to the IOC, relative to the package root. ex: iocBoot/sioc-my-example
 IOC_PATH ?= ""
 
+# List of additional variable names to append to envPaths for the IOC.
+# These will be expanded with the suffix _ENV. So, IOC_ENV += "PV_PREFIX" will be set to the value of ${PV_PREFIX_ENV} in Yocto.
+IOC_ENV ?= ""
+
 # Name of the IOC's st.cmd (usually just st.cmd)
 IOC_ST_CMD ?= "st.cmd"
 
@@ -70,7 +74,7 @@ install_systemd_unit() {
     ln -s "/etc/systemd/system/${PN}.service" "${D}/etc/systemd/system/multi-user.target.wants/${PN}.service"
 }
 
-do_install[postfuncs] += "install_systemd_unit"
+do_install[postfuncs] += "update_env_paths install_systemd_unit"
 
 FILES:${PN} += "/opt/epics/${MODNAME}/ioc-start.sh"
 FILES:${PN} += "/etc/systemd/system/${PN}.service"

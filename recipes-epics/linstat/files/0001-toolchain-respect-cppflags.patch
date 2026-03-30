@@ -1,0 +1,10 @@
+diff --git a/configure/Makefile b/configure/Makefile
+index 4bda617..6ecb369 100644
+--- a/configure/Makefile
++++ b/configure/Makefile
+@@ -12,4 +12,4 @@ TARGETS += TOOLCHAIN
+ include $(TOP)/configure/RULES
+ 
+ TOOLCHAIN: toolchain.cpp
+-	$(CXX) -E $< | grep '^LINSTAT_' > $@
++	$(CXX) $(USR_CPPFLAGS) -E $< | grep '^LINSTAT_' > $@

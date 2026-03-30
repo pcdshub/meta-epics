@@ -14,6 +14,17 @@ def _cat_file(path: str):
     with open(path, 'r') as fp:
         print(fp.read())
 
+def _strip_compiler(d, var: str) -> str:
+    """
+    Process a $CC/$CXX/$LD arg.
+    Strip the compiler off the front of it and return the rest of the string
+    """
+    s: str = d.getVar(var)
+    for k in s:
+        if k == ' ': break
+        s = s[1:]
+    return s
+
 def host_arch(d) -> str:
     """
     Determines host arch based on uname()
@@ -140,13 +151,12 @@ def generate_config_site(d, extra: dict = {}):
     target_cfg_site = f'configure/CONFIG_SITE.Common.{target_arch(d)}'
     with open(target_cfg_site, 'w') as fp:
         fp.seek(0, io.SEEK_END)
-        # append additional compiler/linker flags. Bit of a hack, but we only know these flags
-        # NOW, and not when we configured EPICS base. This is all a product of Yocto's sandboxing...
-        sysroot_arg = f'--sysroot={d.getVar("RECIPE_SYSROOT")}'
-        fp.write(f'USR_CXXFLAGS+={sysroot_arg} {d.getVar("CXXFLAGS")}\n')
-        fp.write(f'USR_CPPFLAGS+={sysroot_arg} {d.getVar("CPPFLAGS")}\n')
-        fp.write(f'USR_CFLAGS+={sysroot_arg} {d.getVar("CFLAGS")}\n')
-        fp.write(f'USR_LDFLAGS+={sysroot_arg} {d.getVar("LDFLAGS")}\n')
+        # The compiler variables $CC/$CXX/$LD in Yocto have a bunch of flags appended. These are not added to CC/CXX/LD in EPICS base,
+        # so we need to add them here.
+        fp.write(f'USR_CXXFLAGS+={_strip_compiler(d, "CXX")} {d.getVar("CXXFLAGS")}\n')
+        fp.write(f'USR_CPPFLAGS+={_strip_compiler(d, "CC")} {d.getVar("CPPFLAGS")}\n')
+        fp.write(f'USR_CFLAGS+={_strip_compiler(d, "CC")} {d.getVar("CFLAGS")}\n')
+        fp.write(f'USR_LDFLAGS+={_strip_compiler(d, "LD")} {d.getVar("LDFLAGS")}\n')
 
     # Generate a CONFIG_SITE for HOST options
     host_cfg_site = f'configure/CONFIG_SITE.Common.{host_arch(d)}'
