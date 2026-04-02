@@ -26,6 +26,11 @@ unset_seq () {
     echo "SNCSEQ=" >> "${S}/configure/RELEASE.local"
 }
 
+set_areadetector() {
+    # Alias AREA_DETECTOR (used by many AD modules) to AREADETECTOR (what we actually generate)
+    echo "AREA_DETECTOR=$(AREADETECTOR)" >> "${S}/configure/RELEASE.local"
+}
+
 # For motor record
 # I don't think this will be needed for embedded targets
 unset_ipac () {
