@@ -15,7 +15,7 @@ S = "${WORKDIR}/git"
 fixup_example_app() {
     # The example app is an embedded top under MCoreUtils. It handles CONFIG_SITE.local correctly (includes it from the real top),
     # but doesnt handle CONFIG_SITE.ARCH correctly. So we must duplicate them
-    cp -iv "${S}/configure/CONFIG_SITE."* "${S}/exampleTop/configure"
+    cp -v "${S}/configure/CONFIG_SITE."* "${S}/exampleTop/configure"
 }
 
 do_configure[postfuncs] += "fixup_example_app"
