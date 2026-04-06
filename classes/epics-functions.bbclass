@@ -27,11 +27,8 @@ unset_seq () {
 }
 
 set_areadetector() {
-    # Alias AREA_DETECTOR (used by many AD modules) to AREADETECTOR (what we actually generate)
-    echo "AREA_DETECTOR=\$(AREADETECTOR)" >> "${S}/configure/RELEASE.local"
-
-    # Alias core modules, too
-    for m in ADCORE ADSUPPORT ADSIMDETECTOR ADCSIMDETECTOR FFMPEGSERVER ADGENICAM
+    # Alias AREA_DETECTOR (used by many AD modules), and other modules packaged with areaDetector to AREADETECTOR (what we actually generate)
+    for m in AREA_DETECTOR ADCORE ADSUPPORT ADSIMDETECTOR ADCSIMDETECTOR FFMPEGSERVER ADGENICAM
     do
         echo "$m=\$(AREADETECTOR)" >> "${S}/configure/RELEASE.local"
     done
