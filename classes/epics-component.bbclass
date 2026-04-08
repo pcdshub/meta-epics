@@ -28,6 +28,8 @@ INSANE_SKIP:class-native = "file-rdeps staticdev arch buildpaths"
 # Sucks, but we have to compile the package for x86_64 hosts too in case some tools run during the build process
 COMPATIBLE_HOST = "(x86_64|aarch64|arm).*linux.*"
 
+BBCLASSEXTEND += "${@'native nativesdk' if d.getVar('ENABLE_HOST_PACKAGE') == '1' else ''}"
+
 python do_configure() {
     print(f'host arch={epics.host_arch(d)}')
     print(f'epics target={epics.target_arch(d)}')
@@ -52,7 +54,9 @@ do_compile:prepend() {
     export PERL5LIB="${RECIPE_SYSROOT}/opt/epics/epics-base/lib/perl"
 }
 
-do_install() {
+# Called from do_install:XXX. Required because downstream recipes like epics-base that override do_install
+# will end up with any do_install:append:blah in this file being appened to *its* do_install. This leads to some rather confusing errors.
+my_do_install() {
     oe_runmake install
 
     # Copy iocBoot and cpuBoot directories
@@ -76,6 +80,29 @@ do_install() {
     for d in $(find ${D}/opt/epics/${MODNAME} -name "TOOLCHAIN*"); do
         sed -i "/^#/d" "${d}"
     done
+}
+
+do_install:class-target() {
+    my_do_install
+
+    # These must now be removed from the target install location
+    rm -rvf "${D}/opt/epics/${MODNAME}/bin/linux-${BUILD_ARCH}"
+    rm -rvf "${D}/opt/epics/${MODNAME}/lib/linux-${BUILD_ARCH}"
+
+    # Remove unused directories to avoid installed-vs-shipped warnings
+    rmdir "${D}/opt/epics/${MODNAME}/bin" || true
+    rmdir "${D}/opt/epics/${MODNAME}/lib" || true
+}
+
+do_install:class-native() {
+    my_do_install
+
+    # Copy everything from the install location to the staging dir
+    install -d "${D}${STAGING_DIR_NATIVE}/opt/epics/${MODNAME}"
+    cp -RP --preserve=mode,links -v "${D}/opt/epics/${MODNAME}/"* "${D}${STAGING_DIR_NATIVE}/opt/epics/${MODNAME}"
+
+    # These directories must be removed otherwise Yocto complains about installed-but-not-shipped directories
+    rm -rvf "${D}/opt/epics/${MODNAME}"
 }
 
 # See comment above; need to do this before tasks with compilation
@@ -122,5 +149,4 @@ SYSROOT_DIRS:append:class-target = " /opt/epics/${MODNAME}/bin/linux-${TARGET_AR
 SYSROOT_DIRS:append:class-target = " /opt/epics/${MODNAME}/lib/linux-${TARGET_ARCH}"
 SYSROOT_DIRS:append:class-target = " ${ALL_FILES}"
 
-SYSROOT_DIRS_NATIVE:append = " ${STAGING_DIR_NATIVE}/opt/epics/${MODNAME}/bin/linux-${BUILD_ARCH}"
-SYSROOT_DIRS_NATIVE:append = " ${STAGING_DIR_NATIVE}/opt/epics/${MODNAME}/lib/linux-${BUILD_ARCH}"
+SYSROOT_DIRS_NATIVE:append = " ${STAGING_DIR_NATIVE}/opt/epics/${MODNAME}"
