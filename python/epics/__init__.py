@@ -125,6 +125,7 @@ def generate_config_site(d, extra: dict = {}):
         with open(f'configure/{fn}', 'w') as fp:
             fp.seek(0, io.SEEK_END)
             fp.write(f'EPICS_BASE_HOST_BIN={native_root}/opt/epics/epics-base/bin/{harch}\n')
+            fp.write(f'EPICS_BASE_HOST_LIB={native_root}/opt/epics/epics-base/lib/{harch}\n')
             # Tweak location of build products
             fp.write(f'INSTALL_LOCATION={pfx}/opt/epics/{mn}\n')
             fp.write(f'FINAL_LOCATION=/opt/epics/{mn}\n')
@@ -168,6 +169,11 @@ def generate_config_site(d, extra: dict = {}):
         fp.write(f'USR_CPPFLAGS+={d.getVar("BUILD_CPPFLAGS")}\n')
         fp.write(f'USR_CFLAGS+={d.getVar("BUILD_CFLAGS")}\n')
         fp.write(f'USR_LDFLAGS+={d.getVar("BUILD_LDFLAGS")}\n')
+        
+        # This is a total bodge... Downstream packages that define ENABLE_HOST_PACKAGE are not actually able to find the EPICS base libraries,
+        # because they're in a separate sysroot. So, we'll need to manually add them to the library search dirs. Alternative fix is to set EPICS_BASE to
+        # a different location for $(EPICS_HOST_ARCH), however epics-base-native doesn't package db/dbd/inc files.
+        fp.write(f'EPICS_BASE_LIB={d.getVar("RECIPE_SYSROOT_NATIVE")}/opt/epics/epics-base/lib/{host_arch(d)}')
 
     print(f'Generated {target_cfg_site}:')
     _cat_file(target_cfg_site)
