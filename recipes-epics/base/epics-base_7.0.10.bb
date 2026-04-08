@@ -123,7 +123,7 @@ do_compile:append:class-target() {
         install.linux-${TARGET_ARCH}
 }
 
-do_install() {
+my_do_install() {
     install_dir="${D}/opt/epics/${MODNAME}"
 
     # Install built or otherwise useful EPICS files
@@ -158,15 +158,26 @@ do_install() {
     install -d ${install_lib}
     cp -RP --preserve=mode,links -v ${S}/lib/linux-${TARGET_ARCH}/* ${install_lib}
 
-    # Add the EPICS libraries to the LD_LIBRARY_PATH. Certain downstream packages need this (i.e. pyepics)
-    install -d "${D}${sysconfdir}/profile.d"
-    echo "export LD_LIBRARY_PATH=/opt/epics/epics-base/lib/linux-${TARGET_ARCH}:\${LD_LIBRARY_PATH}" > "${D}${sysconfdir}/profile.d/epics.sh"
-    
     # Remove all tempoary directories that came over as we copied
     find "${install_dir}" -type d -name "O.*" -exec rm -rf {} +
 }
 
-do_install:append:class-native() {
+do_install:class-native() {
+    my_do_install
+
+    # Copy all files from the original install directory to the native sysroot staging dir
+    old_install_dir="${D}/opt/epics/${MODNAME}"
+    install_dir="${D}${STAGING_DIR_NATIVE}/opt/epics/${MODNAME}"
+    install -d "${install_dir}"
+    cp -RP --preserve=mode,links -v "${old_install_dir}/"* "${install_dir}"
+
+    # Nuke target binaries in the native sysroot staging dir
+    rm -rf "${install_dir}/bin/linux-${TARGET_ARCH}"
+    rm -rf "${install_dir}/lib/linux-${TARGET_ARCH}"
+
+    # Nuke everything in the original install directory
+    rm -rf "${old_install_dir}"
+
     native_bin="${D}${STAGING_DIR_NATIVE}/opt/epics/${MODNAME}/bin/linux-${BUILD_ARCH}"
     install -d ${native_bin}
     cp -RP --preserve=mode,links -v ${S}/bin/linux-${BUILD_ARCH}/* ${native_bin}
@@ -176,7 +187,13 @@ do_install:append:class-native() {
     cp -RP --preserve=mode,links -v ${S}/lib/linux-${BUILD_ARCH}/* ${native_lib}
 }
 
-do_install:append:class-target() {
+do_install:class-target() {
+    my_do_install
+
+    # Add the EPICS libraries to the LD_LIBRARY_PATH. Certain downstream packages need this (i.e. pyepics)
+    install -d "${D}${sysconfdir}/profile.d"
+    echo "export LD_LIBRARY_PATH=/opt/epics/epics-base/lib/linux-${TARGET_ARCH}:\${LD_LIBRARY_PATH}" > "${D}${sysconfdir}/profile.d/epics.sh"
+
     # Symlink commonly used EPICS CLI tools
     mkdir -p "${D}/usr/local/bin"
     for prog in caput caget cainfo camonitor catime caRepeater pvcall pvget pvinfo pvlist pvmonitor pvput

@@ -85,9 +85,15 @@ def generate_release_local(d, extra: dict = {}):
         This is a NAME -> VALUE mapping
     """
     root = d.getVar('RECIPE_SYSROOT')
+    native_root = d.getVar('RECIPE_SYSROOT_NATIVE')
     with open('configure/RELEASE.local', 'w') as fp:
         fp.seek(0, io.SEEK_END) # Ensure we append, in case important content exists
-        fp.write(f'EPICS_BASE={root}/opt/epics/epics-base\n')
+        # If building a native package, use native sysroot for epics-base. Unfortunately a -native package cannot depend on
+        # a package for the target (i.e. epics-base-native cannot depend on epics-base). The other way around is fine.
+        if d.getVar('PN').endswith('-native'):
+            fp.write(f'EPICS_BASE={native_root}/opt/epics/epics-base\n')
+        else:
+            fp.write(f'EPICS_BASE={root}/opt/epics/epics-base\n')
         # Write out modules and their associated paths
         deps = get_depends(d)
         for mn, mv in deps.items():
@@ -119,9 +125,13 @@ def generate_config_site(d, extra: dict = {}):
     mn = d.getVar('MODNAME')
     root = d.getVar('RECIPE_SYSROOT')
     native_root = d.getVar('RECIPE_SYSROOT_NATIVE')
+    native_pfx = f'{pfx}{d.getVar("STAGING_DIR_NATIVE")}'
+    print(f'native_pfx={native_pfx}')
     harch = host_arch(d)
-    # SLAC modules do not support CONFIG_SITE.local, we must use CONFIG_SITE.$(HOST_ARCH).Common instead
-    for fn in ['CONFIG_SITE.local', f'CONFIG_SITE.{host_arch(d)}.Common']:
+    do_host_build = d.getVar('ENABLE_HOST_PACKAGE') == '1'
+
+    # SLAC modules (generally) do not support CONFIG_SITE.local, we must use CONFIG_SITE.$(HOST_ARCH).Common instead
+    for fn in ['CONFIG_SITE.local', f'CONFIG_SITE.{harch}.Common']:
         with open(f'configure/{fn}', 'w') as fp:
             fp.seek(0, io.SEEK_END)
             fp.write(f'EPICS_BASE_HOST_BIN={native_root}/opt/epics/epics-base/bin/{harch}\n')
@@ -140,7 +150,7 @@ def generate_config_site(d, extra: dict = {}):
             # For shared objects, we want to use $ORIGIN for the RPATH, so we don't end up with invalid temporary paths in the shared objects.
             fp.write('LINKER_USE_RPATH=ORIGIN\n')
             # Enable host build when requested
-            if d.getVar('ENABLE_HOST_PACKAGE') == '1':
+            if do_host_build:
                 fp.write('HOST_BUILD=YES\n')
             # Force the list of target arches. Some packages may override this in their CONFIG_SITE
             fp.write(f'CROSS_COMPILER_TARGET_ARCHS={target_arch(d)}\n')
