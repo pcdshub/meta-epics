@@ -7,9 +7,6 @@ import sys
 import subprocess
 import io
 
-def _sanitize_compiler_cmd(cc: str):
-    return cc.split(' ')[0]
-
 def _cat_file(path: str):
     with open(path, 'r') as fp:
         print(fp.read())
