@@ -9,7 +9,7 @@ LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=3775480a712fc46a69647678acb234cb"
 LICENSE_PATH += "${S}"
 
-SRCREV = "d0ee5b2ab61d705c8c64c52c023f70ce5c509860"
+SRCREV = "8e00eaecdee5ce8a474704e70d820e6f92693fa1"
 SRC_URI = "gitsm://github.com/epics-base/pvxs;protocol=https;branch=master;rev=${SRCREV}"
 
 DEPENDS += "libevent"
