@@ -82,6 +82,11 @@ my_do_install() {
         cp -rfv app/srcProtocol "${D}/opt/epics/${MODNAME}/app/srcProtocol"
     fi
 
+    # Copy over entire configure directory to image
+    if [ -d configure ]; then
+        cp -rfv configure "${D}/opt/epics/${MODNAME}"
+    fi
+
     # Sanitize TOOLCHAIN files. These contain absolute paths in comments
     for d in $(find ${D}/opt/epics/${MODNAME} -name "TOOLCHAIN*"); do
         sed -i "/^#/d" "${d}"
@@ -106,9 +111,6 @@ do_install:class-native() {
     # Copy everything from the install location to the staging dir
     install -d "${D}${STAGING_DIR_NATIVE}/opt/epics/${MODNAME}"
     cp -RP --preserve=mode,links -v "${D}/opt/epics/${MODNAME}/"* "${D}${STAGING_DIR_NATIVE}/opt/epics/${MODNAME}"
-
-    # These directories must be removed otherwise Yocto complains about installed-but-not-shipped directories
-    rm -rvf "${D}/opt/epics/${MODNAME}"
 }
 
 # See comment above; need to do this before tasks with compilation
@@ -120,7 +122,9 @@ PACKAGE_PREPROCESS_FUNCS =+ "epics_fix_target_cross_archs"
 
 epics_fix_target_cross_archs () {
     # Remove CROSS_COMPILER_TARGET_ARCHS to avoid double inclusion of arch in target build
-    sed -i -e "s/CROSS_COMPILER_TARGET_ARCHS=linux-${TARGET_ARCH}//" "${PKGD}/opt/epics/${MODNAME}/configure/CONFIG_SITE.local"
+    if [ -f "${PKGD}/opt/epics/${MODNAME}/configure/CONFIG_SITE.local" ]; then
+        sed -i -e "s/CROSS_COMPILER_TARGET_ARCHS=linux-${TARGET_ARCH}//" "${PKGD}/opt/epics/${MODNAME}/configure/CONFIG_SITE.local"
+    fi
 }
 
 # Common directories to install for both native and target pkgs
