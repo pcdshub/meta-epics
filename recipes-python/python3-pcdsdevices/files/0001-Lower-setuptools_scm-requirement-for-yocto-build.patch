@@ -1,0 +1,21 @@
+From 7e3ee80c66afb0914003ecb2d5ec35cbb5532304 Mon Sep 17 00:00:00 2001
+From: Tyler Johnson <tylerjohnson3208@gmail.com>
+Date: Thu, 6 Aug 2026 10:46:06 -0700
+Subject: [PATCH] Lower setuptools_scm requirement for yocto build
+
+---
+ pyproject.toml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pyproject.toml b/pyproject.toml
+index ca4c5ed..f085767 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [build-system]
+ build-backend = "setuptools.build_meta"
+-requires = [ "setuptools>=45", "setuptools_scm[toml]==9.2.2",]
++requires = [ "setuptools>=45", "setuptools_scm[toml]>=6.2",]
+ 
+ [project]
+ classifiers = [ "Programming Language :: Python :: 3",]

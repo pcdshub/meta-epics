@@ -35,4 +35,8 @@ RDEPENDS:${PN} += "\
 
 SRC_URI[sha256sum] = "f533222cb58172ae4a96924c89ec10e82b0864a4bdbe3f0c6458d59312c67a58"
 
+# Upstream has setuptools_scm pinned to 9.2.2, change to same version as 
+# pcdswidgets for yocto build
+SRC_URI += "file://0001-Lower-setuptools_scm-requirement-for-yocto-build.patch"
+
 BBCLASSEXTEND = "native nativesdk"
