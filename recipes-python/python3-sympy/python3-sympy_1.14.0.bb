@@ -11,6 +11,10 @@ PEP517_BUILD_API = "setuptools.build_meta"
 
 DEPENDS += "python3-tomli-native python3-setuptools-scm-native"
 
+RDEPENDS:${PN} += "\
+    python3-mpmath \
+    \
+    "
 SRC_URI[sha256sum] = "d3d3fe8df1e5a0b42f0e7bdf50541697dbe7d23746e894990c030e2b05e72517"
 
 BBCLASSEXTEND = "native nativesdk"
