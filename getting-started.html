@@ -1,0 +1,177 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Getting Started &mdash; meta-epics  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Usage Guide" href="usage.html" />
+    <link rel="prev" title="Welcome to the meta-epics documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            meta-epics
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#getting-meta-epics">Getting meta-epics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-a-demo-ioc">Running a Demo IOC</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage Guide</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">meta-epics</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Getting Started</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/getting-started.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="getting-started">
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading"></a></h1>
+<section id="getting-meta-epics">
+<h2>Getting meta-epics<a class="headerlink" href="#getting-meta-epics" title="Link to this heading"></a></h2>
+<p>meta-epics can be cloned from GitHub at: <a class="reference external" href="https://github.com/pcdshub/meta-epics.git">https://github.com/pcdshub/meta-epics.git</a></p>
+<p>The layer can be added to your Yocto project using bitbake-layers:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:pcdshub/meta-epics.git
+bitbake-layers<span class="w"> </span>add-layer<span class="w"> </span>meta-epics
+</pre></div>
+</div>
+<p>To install the EPICS base tools (caget, caput, etc.) into your image, add the following to your local.conf</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">IMAGE_INSTALL</span><span class="p">:</span><span class="n">append</span> <span class="o">=</span> <span class="s2">&quot; epics-base&quot;</span>
+</pre></div>
+</div>
+<p>The resulting image should now have the EPICS base tools installed to /usr/local/bin and available in your $PATH.
+The EPICS base files are located at /opt/epics/epics-base.</p>
+</section>
+<section id="running-a-demo-ioc">
+<h2>Running a Demo IOC<a class="headerlink" href="#running-a-demo-ioc" title="Link to this heading"></a></h2>
+<p>The recipe <code class="docutils literal notranslate"><span class="pre">epics-demo-ioc</span></code> (located in <code class="docutils literal notranslate"><span class="pre">recipes-examples/demo-ioc</span></code>) provides a simple system monitoring IOC using the linStat EPICS module.</p>
+<p>To install this IOC on your target, add the following to your <code class="docutils literal notranslate"><span class="pre">local.conf</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">IMAGE_INSTALL</span><span class="p">:</span><span class="n">append</span> <span class="o">=</span> <span class="s2">&quot; epics-demo-ioc&quot;</span>
+</pre></div>
+</div>
+<p>After rebuilding your image and uploading it to the target, you should be able to access iocsh using telnet:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ telnet localhost 30000
+Connected to localhost
+@@@ Welcome to procServ (procServ Process Server 2.8.0)
+@@@ Use ^X to kill the child, auto restart mode is ON, use ^T to toggle auto restart
+@@@ procServ server PID: 548
+@@@ Server startup directory: /
+@@@ Child startup directory: /
+@@@ Child started as: /opt/epics/epics-demo-ioc/ioc-start.sh
+@@@ Child log file: -
+@@@ Child &quot;/opt/epics/epics-demo-ioc/ioc-start.sh&quot; PID: 579
+@@@ procServ server started at: Wed Jan  8 18:23:03 2025
+@@@ Child &quot;/opt/epics/epics-demo-ioc/ioc-start.sh&quot; started at: Wed Jan  8 18:23:04 2025
+@@@ 0 user(s) and 0 logger(s) connected (plus you)
+
+Entering character mode
+Escape character is &#39;^]&#39;.
+
+epics&gt; echo hello
+hello
+</pre></div>
+</div>
+<p>PVs on the demo IOC are accessible with PVAccess and ChannelAccess:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pvlist
+GUID 0x88C27E6700000000A0D88232 version 2: tcp@[ 10.0.0.197:5075 ]
+
+$ pvlist 0x88C27E6700000000A0D88232
+SYS:DEMO:CAP_EFF_N
+SYS:DEMO:IRQ_TOTR_
+SYS:DEMO:SYS_UP
+...
+
+$ pvget SYS:DEMO:SYS_UP
+SYS:DEMO:SYS_UP 2025-01-22 10:04:10.052  1.17969e+06
+
+$ caget SYS:DEMO:SYS_UP
+SYS:DEMO:SYS_UP               1.1797e+06
+</pre></div>
+</div>
+<p>Assuming your <code class="docutils literal notranslate"><span class="pre">EPICS_CA_ADDR_LIST</span></code> and <code class="docutils literal notranslate"><span class="pre">EPICS_PVA_ADDR_LIST</span></code> are configured properly on a remote machine, they will be accessible there too.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to the meta-epics documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="usage.html" class="btn btn-neutral float-right" title="Usage Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, SLAC National Accelerator Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
