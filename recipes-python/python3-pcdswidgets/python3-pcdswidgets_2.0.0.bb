@@ -17,6 +17,6 @@ RDEPENDS:${PN} += "\
     \
     "
 
-SRC_URI[sha256sum] = "287fead7161fd64214833002768e6388db8ec2e009d556b8e9d36ff5a6a51d46"
+SRC_URI[sha256sum] = "47166d20c90a520cb132aa88203cb8b5c96bccc4b27622caca8af5ac99e2dc93"
 
 BBCLASSEXTEND = "native nativesdk"
