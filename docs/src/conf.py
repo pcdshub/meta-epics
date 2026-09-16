@@ -25,3 +25,4 @@ exclude_patterns = []
 
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
+html_title = 'meta-epics Docs'
