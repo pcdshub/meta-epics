@@ -8,7 +8,7 @@ PYPI_PACKAGE = "pcdswidgets"
 
 PEP517_BUILD_API = "setuptools.build_meta"
 
-DEPENDS += "python3-tomli-native python3-setuptools-scm-native"
+DEPENDS += "python3-tomli-native python3-setuptools-native python3-setuptools-scm-native"
 
 RDEPENDS:${PN} += "\
     python3-pyyaml \
@@ -17,6 +17,6 @@ RDEPENDS:${PN} += "\
     \
     "
 
-SRC_URI[sha256sum] = "47166d20c90a520cb132aa88203cb8b5c96bccc4b27622caca8af5ac99e2dc93"
+SRC_URI[sha256sum] = "9f78f3e519ed14b962684a43b2a730ea108eb7fc28876768d033259856687147"
 
 BBCLASSEXTEND = "native nativesdk"
