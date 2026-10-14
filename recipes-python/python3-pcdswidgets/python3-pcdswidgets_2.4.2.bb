@@ -17,6 +17,7 @@ RDEPENDS:${PN} += "\
     \
     "
 
+SRC_URI += "file://0001-Remove-version-req-on-setuptools-for-scarthgap-compa.patch"
 SRC_URI[sha256sum] = "9f78f3e519ed14b962684a43b2a730ea108eb7fc28876768d033259856687147"
 
 BBCLASSEXTEND = "native nativesdk"

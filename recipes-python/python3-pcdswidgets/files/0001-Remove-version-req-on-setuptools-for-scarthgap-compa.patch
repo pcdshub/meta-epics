@@ -1,0 +1,21 @@
+From 893892509ece4e686b56402e08ef98eee5ff8e22 Mon Sep 17 00:00:00 2001
+From: Tyler Johnson <tylerjohnson3208@gmail.com>
+Date: Wed, 14 Oct 2026 08:56:17 -0700
+Subject: [PATCH] Remove version req on setuptools for scarthgap compat
+
+---
+ pyproject.toml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 9ca91ac..aa9f2ef 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,6 +1,6 @@
+ [build-system]
+ build-backend = "setuptools.build_meta"
+-requires = [ "setuptools>=83", "setuptools_scm[toml]>=6.2" ]
++requires = [ "setuptools", "setuptools_scm[toml]>=6.2" ]
+ 
+ [project]
+ classifiers = [ "Development Status :: 5 - Production/Stable", "Natural Language :: English", "Programming Language :: Python :: 3",]
