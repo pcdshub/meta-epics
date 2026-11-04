@@ -1,4 +1,4 @@
-inherit epics-component
+inherit epics-component python3native
 
 SUMMARY = "EPICS base recipe"
 DESCRIPTION = "Recipe for building EPICS base, the core component of the EPICS control system."
@@ -62,6 +62,9 @@ do_configure() {
 
     # Build only for target architecture(s), not for the build host
     echo "HOST_BUILD=NO" >> "${F}"
+
+    # Defaults to `python` in EPICS base, but yocto generally doesnt provide it in $(HOSTTOOLS)
+    echo "PYTHON=python3" >> "${F}"
 
     #############################################################
     # configure/CONFIG_SITE.Common.linux-${BUILD_ARCH}
